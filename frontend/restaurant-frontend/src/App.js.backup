@@ -1,0 +1,537 @@
+import React, { useState, useEffect } from 'react';
+import { ShoppingCart, Menu, X, Plus, Minus, Star, Clock, MapPin, Phone } from 'lucide-react';
+
+const RestaurantApp = () => {
+  const [currentPage, setCurrentPage] = useState('home');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // API Configuration
+  const API_BASE_URL = 'http://localhost:5000/api';
+
+  // Fetch menu items from API
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(`${API_BASE_URL}/menu`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Transform API data to match our component structure
+          const transformedItems = data.data.map(item => ({
+            id: item._id,
+            name: item.name,
+            price: item.price,
+            description: item.description,
+            category: item.category.charAt(0).toUpperCase() + item.category.slice(1).replace('-', ' '),
+            image: getEmojiForCategory(item.category),
+            rating: item.rating?.average || 4.5,
+            originalData: item // Keep original data for reference
+          }));
+          
+          setMenuItems(transformedItems);
+        } else {
+          throw new Error('Failed to fetch menu items');
+        }
+      } catch (err) {
+        console.error('Error fetching menu:', err);
+        setError(err.message);
+        
+        // Fallback to sample data if API fails
+        const sampleMenuItems = [
+          {
+            id: 'fallback-1',
+            name: "Grilled Salmon",
+            price: 24.99,
+            description: "Fresh Atlantic salmon with lemon herbs and seasonal vegetables",
+            category: "Main Course",
+            image: "🐟",
+            rating: 4.8
+          },
+          {
+            id: 'fallback-2',
+            name: "Caesar Salad",
+            price: 12.99,
+            description: "Crisp romaine lettuce, parmesan cheese, croutons, caesar dressing",
+            category: "Appetizer",
+            image: "🥗",
+            rating: 4.6
+          }
+        ];
+        setMenuItems(sampleMenuItems);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenuItems();
+  }, []);
+
+  // Helper function to get emoji based on category
+  const getEmojiForCategory = (category) => {
+    const categoryEmojis = {
+      'appetizer': '🥗',
+      'main-course': '🍽️',
+      'dessert': '🍰',
+      'beverages': '🥤',
+      'sides': '🍞',
+      'specials': '⭐'
+    };
+    return categoryEmojis[category] || '🍽️';
+  };
+
+  const addToCart = (item) => {
+    setCartItems(prev => {
+      const existing = prev.find(cartItem => cartItem.id === item.id);
+      if (existing) {
+        return prev.map(cartItem =>
+          cartItem.id === item.id
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            : cartItem
+        );
+      }
+      return [...prev, { ...item, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (itemId) => {
+    setCartItems(prev => prev.filter(item => item.id !== itemId));
+  };
+
+  const updateQuantity = (itemId, newQuantity) => {
+    if (newQuantity === 0) {
+      removeFromCart(itemId);
+      return;
+    }
+    setCartItems(prev =>
+      prev.map(item =>
+        item.id === itemId ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
+
+  const getTotalPrice = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const getTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  // Navigation Component
+  const Navigation = () => (
+    <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <h1 className="text-2xl font-bold text-gray-900">Bella Vista</h1>
+            {loading && <span className="ml-2 text-sm text-orange-600">Loading menu...</span>}
+            {error && <span className="ml-2 text-sm text-red-600">API Error</span>}
+          </div>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:block">
+            <div className="flex items-center space-x-8">
+              <button 
+                onClick={() => setCurrentPage('home')}
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  currentPage === 'home' ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'
+                }`}
+              >
+                Home
+              </button>
+              <button 
+                onClick={() => setCurrentPage('menu')}
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  currentPage === 'menu' ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'
+                }`}
+              >
+                Menu {menuItems.length > 0 && `(${menuItems.length})`}
+              </button>
+              <button 
+                onClick={() => setCurrentPage('about')}
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  currentPage === 'about' ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'
+                }`}
+              >
+                About
+              </button>
+              <button 
+                onClick={() => setCurrentPage('contact')}
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  currentPage === 'contact' ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'
+                }`}
+              >
+                Contact
+              </button>
+            </div>
+          </div>
+
+          {/* Cart and Mobile Menu */}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setCurrentPage('cart')}
+              className="relative p-2 text-gray-700 hover:text-orange-600 transition-colors"
+            >
+              <ShoppingCart className="h-6 w-6" />
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {getTotalItems()}
+                </span>
+              )}
+            </button>
+            
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 text-gray-700 hover:text-orange-600"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-200">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {['home', 'menu', 'about', 'contact'].map((page) => (
+                <button
+                  key={page}
+                  onClick={() => {
+                    setCurrentPage(page);
+                    setIsMenuOpen(false);
+                  }}
+                  className={`block px-3 py-2 text-base font-medium w-full text-left capitalize transition-colors ${
+                    currentPage === page ? 'text-orange-600 bg-orange-50' : 'text-gray-700 hover:text-orange-600'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+
+  // Home Page Component
+  const HomePage = () => (
+    <div className="pt-16">
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-600 text-white">
+        <div className="text-center px-4">
+          <h1 className="text-6xl md:text-8xl font-bold mb-6">Bella Vista</h1>
+          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+            Authentic Italian cuisine crafted with passion and the finest ingredients
+          </p>
+          <div className="space-y-4">
+            <button
+              onClick={() => setCurrentPage('menu')}
+              className="bg-white text-orange-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors mr-4"
+            >
+              View Our Menu
+            </button>
+            {menuItems.length > 0 && (
+              <p className="text-lg opacity-90">
+                Fresh menu with {menuItems.length} delicious items loaded from our kitchen!
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">Why Choose Bella Vista?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Premium Quality</h3>
+              <p className="text-gray-600">Only the finest ingredients sourced from trusted suppliers</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Fast Service</h3>
+              <p className="text-gray-600">Quick preparation without compromising on taste</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Great Location</h3>
+              <p className="text-gray-600">Conveniently located in the heart of the city</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+
+  // Menu Page Component
+  const MenuPage = () => {
+    if (loading) {
+      return (
+        <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading our delicious menu...</p>
+          </div>
+        </div>
+      );
+    }
+
+    const categories = [...new Set(menuItems.map(item => item.category))];
+    
+    return (
+      <div className="pt-16 min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-4xl font-bold text-center text-gray-900 mb-4">Our Menu</h1>
+          {error && (
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-8 rounded">
+              <p className="font-bold">Note:</p>
+              <p>Using fallback menu data. API connection: {error}</p>
+            </div>
+          )}
+          <p className="text-center text-gray-600 mb-12">
+            Featuring {menuItems.length} carefully crafted dishes
+          </p>
+          
+          {categories.map(category => (
+            <div key={category} className="mb-12">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">{category}</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {menuItems
+                  .filter(item => item.category === category)
+                  .map(item => (
+                    <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <div className="text-4xl mb-2">{item.image}</div>
+                            <h3 className="text-xl font-semibold text-gray-900">{item.name}</h3>
+                            <div className="flex items-center mt-1">
+                              <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                              <span className="text-sm text-gray-600 ml-1">{item.rating}</span>
+                            </div>
+                          </div>
+                          <span className="text-2xl font-bold text-orange-600">${item.price}</span>
+                        </div>
+                        <p className="text-gray-600 mb-4">{item.description}</p>
+                        <button
+                          onClick={() => addToCart(item)}
+                          className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors"
+                        >
+                          Add to Cart
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Cart Page Component
+  const CartPage = () => (
+    <div className="pt-16 min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-4xl font-bold text-center text-gray-900 mb-12">Shopping Cart</h1>
+        
+        {cartItems.length === 0 ? (
+          <div className="text-center py-12">
+            <ShoppingCart className="h-24 w-24 text-gray-300 mx-auto mb-4" />
+            <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
+            <button
+              onClick={() => setCurrentPage('menu')}
+              className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              Browse Menu
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+              {cartItems.map(item => (
+                <div key={item.id} className="flex items-center justify-between p-6 border-b border-gray-200 last:border-b-0">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-2xl">{item.image}</div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                      <p className="text-gray-600">${item.price}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <span className="w-8 text-center">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-900 w-20 text-right">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center text-2xl font-bold text-gray-900 mb-6">
+                <span>Total: ${getTotalPrice().toFixed(2)}</span>
+              </div>
+              <button className="w-full bg-orange-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-orange-700 transition-colors">
+                Proceed to Checkout
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // About Page Component
+  const AboutPage = () => (
+    <div className="pt-16 min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-4xl font-bold text-center text-gray-900 mb-12">About Bella Vista</h1>
+        <div className="bg-white rounded-lg shadow-md p-8">
+          <p className="text-lg text-gray-700 mb-6">
+            Welcome to Bella Vista, where passion meets culinary excellence. For over 20 years, we have been 
+            serving authentic Italian cuisine crafted with love and the finest ingredients.
+          </p>
+          <p className="text-lg text-gray-700 mb-6">
+            Our chef-driven menu features traditional recipes passed down through generations, complemented 
+            by modern techniques and seasonal ingredients sourced from local farms.
+          </p>
+          <p className="text-lg text-gray-700">
+            Whether you're joining us for an intimate dinner or celebrating a special occasion, 
+            we're committed to providing an unforgettable dining experience in a warm, welcoming atmosphere.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Contact Page Component
+  const ContactPage = () => (
+    <div className="pt-16 min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-4xl font-bold text-center text-gray-900 mb-12">Contact Us</h1>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Get in Touch</h2>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <MapPin className="h-5 w-5 text-orange-600" />
+                <span className="text-gray-700">123 Gourmet Street, Food District</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Phone className="h-5 w-5 text-orange-600" />
+                <span className="text-gray-700">+1 (555) 123-4567</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Clock className="h-5 w-5 text-orange-600" />
+                <div className="text-gray-700">
+                  <p>Mon-Thu: 11:00 AM - 10:00 PM</p>
+                  <p>Fri-Sat: 11:00 AM - 11:00 PM</p>
+                  <p>Sun: 12:00 PM - 9:00 PM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Send us a Message</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea
+                  rows="4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                Send Message
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render current page
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'home': return <HomePage />;
+      case 'menu': return <MenuPage />;
+      case 'cart': return <CartPage />;
+      case 'about': return <AboutPage />;
+      case 'contact': return <ContactPage />;
+      default: return <HomePage />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      {renderCurrentPage()}
+    </div>
+  );
+};
+
+export default RestaurantApp;
