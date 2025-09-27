@@ -57,6 +57,15 @@ const connectDB = async () => {
 // Connect to Database
 connectDB();
 
+// Add this to your server.js
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Test Route
 app.get('/api/test', (req, res) => {
   res.json({ 

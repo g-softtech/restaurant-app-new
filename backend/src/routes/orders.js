@@ -1,116 +1,89 @@
-
-
-
-// ============================================
-// 5. Update routes/orders.js - Support authenticated users
-// ============================================
+// In routes/orders.js - replace with this version that saves to database
 const express = require('express');
 const Order = require('../models/Order');
-const { auth } = require('../middleware/auth');
-
 const router = express.Router();
 
-// Middleware to optionally authenticate
-const optionalAuth = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  if (token) {
-    // If token exists, use auth middleware
-    return auth(req, res, next);
-  }
-  // If no token, continue as guest
-  next();
-};
-
-// @route   POST /api/orders
-// @desc    Create new order
-// @access  Public (guest) or Private (authenticated)
-router.post('/', optionalAuth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { items, customerInfo, totalAmount, paymentMethod, paymentIntentId } = req.body;
-
+    console.log('Received order request:', req.body);
+    
+    // Create the order data for your Order model
     const orderData = {
-      items,
-      customerInfo,
-      totalAmount,
-      paymentMethod,
-      paymentIntentId,
+      customerInfo: req.body.customerInfo,
+      items: req.body.items,
+      totalAmount: req.body.totalAmount,
+      paymentMethod: req.body.paymentMethod,
       status: 'pending'
     };
-
-    // If user is authenticated, link the order
-    if (req.user) {
-      orderData.customer = req.user._id;
-    }
-
+    
+    console.log('Creating order with data:', orderData);
+    
+    // Save to database
     const order = new Order(orderData);
     await order.save();
-
-    // Populate menu items
-    await order.populate('items.menuItem');
-
-    res.status(201).json({
-      message: 'Order created successfully',
-      order
-    });
-  } catch (error) {
-    console.error('Create order error:', error);
-    res.status(500).json({ message: 'Server error creating order' });
-  }
-});
-
-// @route   GET /api/orders/my-orders
-// @desc    Get user's order history
-// @access  Private
-router.get('/my-orders', auth, async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const orders = await Order.find({ customer: req.user._id })
-      .populate('items.menuItem')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    const totalOrders = await Order.countDocuments({ customer: req.user._id });
-
+    
+    console.log('Order saved to database:', order._id);
+    
     res.json({
-      orders,
-      pagination: {
-        page,
-        limit,
-        total: totalOrders,
-        pages: Math.ceil(totalOrders / limit)
-      }
+      success: true,
+      message: 'Order created successfully',
+      order: order,
+      data: order
     });
+    
   } catch (error) {
-    console.error('Get orders error:', error);
-    res.status(500).json({ message: 'Server error fetching orders' });
+    console.error('Order creation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create order',
+      error: error.message
+    });
   }
 });
 
-// @route   GET /api/orders/:orderId
-// @desc    Get single order
-// @access  Public (with order ID) or Private (user's order)
-router.get('/:orderId', optionalAuth, async (req, res) => {
+// Add the GET route for tracking
+router.get('/:orderId', async (req, res) => {
   try {
-    const order = await Order.findById(req.params.orderId)
-      .populate('items.menuItem');
+    console.log('Looking for order:', req.params.orderId);
+    
+    const order = await Order.findById(req.params.orderId);
     
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+      console.log('Order not found in database');
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
     }
-
-    // If user is authenticated, check if they own the order
-    if (req.user && order.customer && order.customer.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-
-    res.json({ order });
+    
+    console.log('Order found:', order._id);
+    
+    res.json({
+      success: true,
+      data: order
+    });
+    
   } catch (error) {
-    console.error('Get order error:', error);
-    res.status(500).json({ message: 'Server error fetching order' });
+    console.error('Order fetch error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching order'
+    });
+  }
+});
+
+// Add to routes/orders.js
+router.patch('/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    res.json({ success: true, order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 

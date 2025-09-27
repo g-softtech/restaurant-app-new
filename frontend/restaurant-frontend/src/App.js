@@ -1,67 +1,66 @@
 // App.js
-import React, { useState, useEffect, createContext, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, createContext, useContext } from "react";
+import { useParams } from "react-router-dom";
 import { Package, Truck } from "lucide-react";
 
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import { 
-  ShoppingCart, 
-  Menu, 
-  X, 
-  Plus, 
-  Minus, 
-  Star, 
-  Clock, 
-  MapPin, 
-  Phone, 
-  AlertCircle, 
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+import axios from "axios";
+import {
+  ShoppingCart,
+  Menu,
+  X,
+  Plus,
+  Minus,
+  Star,
+  Clock,
+  MapPin,
+  Phone,
+  AlertCircle,
   Loader,
   Home,
   UtensilsCrossed,
   Info,
-  MessageCircle
-} from 'lucide-react';
+  MessageCircle,
+} from "lucide-react";
 
 // Add these imports at the top of your App.js
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import Profile from './components/profile/Profile';
-import ProtectedRoute from './components/common/ProtectedRoute';
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
+import Profile from "./components/profile/Profile";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
-
-import {RestaurantProvider, useRestaurant } from './contexts/RestaurantContext'; // Assuming you extract context
-import { 
-  CreditCard, 
-  
-  
-  User, 
-  Mail, 
-  
-  CheckCircle,
-  
-  
-  ArrowLeft
-} from 'lucide-react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import {
+  RestaurantProvider,
+  useRestaurant,
+} from "./contexts/RestaurantContext"; // Assuming you extract context
+import { CreditCard, User, Mail, CheckCircle, ArrowLeft } from "lucide-react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Payment method options
 const PAYMENT_METHODS = [
-  { id: 'card', name: 'Credit/Debit Card', icon: CreditCard },
-  { id: 'paystack', name: 'Paystack', icon: CreditCard },
-  { id: 'cash', name: 'Cash on Delivery', icon: MapPin }
+  { id: "card", name: "Credit/Debit Card", icon: CreditCard },
+  { id: "paystack", name: "Paystack", icon: CreditCard },
+  { id: "cash", name: "Cash on Delivery", icon: MapPin },
 ];
 
 // Delivery time options
 const DELIVERY_TIMES = [
-  { value: 'asap', label: 'ASAP (30-45 mins)' },
-  { value: '1hour', label: 'In 1 hour' },
-  { value: '2hours', label: 'In 2 hours' },
-  { value: 'schedule', label: 'Schedule for later' }
+  { value: "asap", label: "ASAP (30-45 mins)" },
+  { value: "1hour", label: "In 1 hour" },
+  { value: "2hours", label: "In 2 hours" },
+  { value: "schedule", label: "Schedule for later" },
 ];
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 // Create Context for Global State Management
 // const RestaurantContext = createContext();
@@ -88,9 +87,9 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 //     try {
 //       setLoading(true);
 //       setError(null);
-      
+
 //       const response = await axios.get(`${API_BASE_URL}/menu`);
-      
+
 //       if (response.data.success) {
 //         const transformedItems = response.data.data.map(item => ({
 //           id: item._id,
@@ -103,7 +102,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 //           availability: item.availability || true,
 //           originalData: item
 //         }));
-        
+
 //         setMenuItems(transformedItems);
 //       } else {
 //         throw new Error('Failed to fetch menu items');
@@ -111,7 +110,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 //     } catch (err) {
 //       console.error('Error fetching menu:', err);
 //       setError(err.response?.data?.message || err.message || 'Failed to load menu');
-      
+
 //       // Fallback to sample data
 //       const sampleMenuItems = [
 //         {
@@ -187,7 +186,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 //       }
 //       return [...prev, { ...item, quantity: 1 }];
 //     });
-    
+
 //     // Show success notification
 //     showNotification(`Added ${item.name} to cart!`, 'success');
 //   };
@@ -267,10 +266,10 @@ const Navigation = () => {
   const navigate = useNavigate(); // ADD THIS LINE
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/menu', label: 'Menu', icon: UtensilsCrossed },
-    { path: '/about', label: 'About', icon: Info },
-    { path: '/contact', label: 'Contact', icon: MessageCircle }
+    { path: "/", label: "Home", icon: Home },
+    { path: "/menu", label: "Menu", icon: UtensilsCrossed },
+    { path: "/about", label: "About", icon: Info },
+    { path: "/contact", label: "Contact", icon: MessageCircle },
   ];
 
   const isActive = (path) => {
@@ -280,7 +279,7 @@ const Navigation = () => {
   // ADD THIS FUNCTION
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -288,7 +287,10 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+            <Link
+              to="/"
+              className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent"
+            >
               Bella Vista
             </Link>
             {loading && (
@@ -304,7 +306,7 @@ const Navigation = () => {
               </div>
             )}
           </div>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-8">
@@ -316,8 +318,8 @@ const Navigation = () => {
                     to={item.path}
                     className={`flex items-center space-x-1 px-3 py-2 text-sm font-medium transition-all duration-200 relative ${
                       isActive(item.path)
-                        ? 'text-orange-600'
-                        : 'text-gray-700 hover:text-orange-600'
+                        ? "text-orange-600"
+                        : "text-gray-700 hover:text-orange-600"
                     }`}
                   >
                     <IconComponent className="h-4 w-4" />
@@ -350,12 +352,24 @@ const Navigation = () => {
               <div className="relative group">
                 <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors">
                   <User className="h-6 w-6" />
-                  <span className="hidden md:block font-medium">{user?.name}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <span className="hidden md:block font-medium">
+                    {user?.name}
+                  </span>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
-                
+
                 {/* Dropdown Menu */}
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-1">
@@ -390,13 +404,17 @@ const Navigation = () => {
                 </Link>
               </div>
             )}
-            
+
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 text-gray-700 hover:text-orange-600 transition-colors"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -414,8 +432,8 @@ const Navigation = () => {
                     onClick={() => setIsMenuOpen(false)}
                     className={`flex items-center space-x-2 px-3 py-2 text-base font-medium w-full transition-all duration-200 rounded-md ${
                       isActive(item.path)
-                        ? 'text-orange-600 bg-orange-50'
-                        : 'text-gray-700 hover:text-orange-600 hover:bg-gray-50'
+                        ? "text-orange-600 bg-orange-50"
+                        : "text-gray-700 hover:text-orange-600 hover:bg-gray-50"
                     }`}
                   >
                     <IconComponent className="h-5 w-5" />
@@ -423,7 +441,7 @@ const Navigation = () => {
                   </Link>
                 );
               })}
-              
+
               {/* Mobile Authentication Links */}
               <div className="border-t border-gray-200 pt-2 mt-2">
                 {isAuthenticated ? (
@@ -483,20 +501,24 @@ const HomePage = () => {
       <section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-orange-500 via-red-600 to-pink-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-20"></div>
         <div className="relative text-center px-4 z-10">
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">Bella Vista</h1>
+          <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">
+            Bella Vista
+          </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto opacity-90 leading-relaxed">
-            Authentic Italian cuisine crafted with passion and the finest ingredients
+            Authentic Italian cuisine crafted with passion and the finest
+            ingredients
           </p>
           <div className="space-y-4">
             <button
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate("/menu")}
               className="bg-white text-orange-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg mr-4"
             >
               Explore Our Menu
             </button>
             {menuItems.length > 0 && (
               <p className="text-lg opacity-90 mt-4">
-                ✨ Fresh menu with {menuItems.length} delicious items available now!
+                ✨ Fresh menu with {menuItems.length} delicious items available
+                now!
               </p>
             )}
           </div>
@@ -509,31 +531,48 @@ const HomePage = () => {
       {/* Features Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">Why Choose Bella Vista?</h2>
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">
+            Why Choose Bella Vista?
+          </h2>
           <p className="text-center text-gray-600 mb-16 max-w-2xl mx-auto">
-            Experience the perfect blend of traditional Italian flavors and modern culinary excellence
+            Experience the perfect blend of traditional Italian flavors and
+            modern culinary excellence
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
               <div className="w-20 h-20 bg-gradient-to-r from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:shadow-lg transition-all duration-300">
                 <Star className="h-10 w-10 text-orange-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">Premium Quality</h3>
-              <p className="text-gray-600 leading-relaxed">Only the finest ingredients sourced from trusted suppliers across Italy</p>
+              <h3 className="text-xl font-semibold mb-3 text-gray-900">
+                Premium Quality
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Only the finest ingredients sourced from trusted suppliers
+                across Italy
+              </p>
             </div>
             <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
               <div className="w-20 h-20 bg-gradient-to-r from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:shadow-lg transition-all duration-300">
                 <Clock className="h-10 w-10 text-orange-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">Fast Delivery</h3>
-              <p className="text-gray-600 leading-relaxed">Quick preparation and delivery without compromising on authentic taste and quality</p>
+              <h3 className="text-xl font-semibold mb-3 text-gray-900">
+                Fast Delivery
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Quick preparation and delivery without compromising on authentic
+                taste and quality
+              </p>
             </div>
             <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
               <div className="w-20 h-20 bg-gradient-to-r from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:shadow-lg transition-all duration-300">
                 <MapPin className="h-10 w-10 text-orange-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">Prime Location</h3>
-              <p className="text-gray-600 leading-relaxed">Conveniently located in the heart of the city with easy access</p>
+              <h3 className="text-xl font-semibold mb-3 text-gray-900">
+                Prime Location
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Conveniently located in the heart of the city with easy access
+              </p>
             </div>
           </div>
         </div>
@@ -542,18 +581,31 @@ const HomePage = () => {
       {/* Quick Menu Preview */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">Featured Dishes</h2>
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
+            Featured Dishes
+          </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            {menuItems.slice(0, 3).map(item => (
-              <div key={item.id} className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2">
+            {menuItems.slice(0, 3).map((item) => (
+              <div
+                key={item.id}
+                className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2"
+              >
                 <div className="text-5xl mb-4 text-center">{item.image}</div>
-                <h3 className="text-xl font-semibold mb-2 text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center mb-4 line-clamp-2">{item.description}</p>
+                <h3 className="text-xl font-semibold mb-2 text-center">
+                  {item.name}
+                </h3>
+                <p className="text-gray-600 text-center mb-4 line-clamp-2">
+                  {item.description}
+                </p>
                 <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-orange-600">${item.price}</span>
+                  <span className="text-2xl font-bold text-orange-600">
+                    ${item.price}
+                  </span>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span className="text-sm text-gray-600 ml-1">{item.rating}</span>
+                    <span className="text-sm text-gray-600 ml-1">
+                      {item.rating}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -561,7 +613,7 @@ const HomePage = () => {
           </div>
           <div className="text-center mt-12">
             <button
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate("/menu")}
               className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               View Full Menu
@@ -588,12 +640,14 @@ const MenuPage = () => {
     );
   }
 
-  const categories = [...new Set(menuItems.map(item => item.category))];
-  
+  const categories = [...new Set(menuItems.map((item) => item.category))];
+
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-5xl font-bold text-center text-gray-900 mb-6">Our Menu</h1>
+        <h1 className="text-5xl font-bold text-center text-gray-900 mb-6">
+          Our Menu
+        </h1>
         {error && (
           <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-400 text-amber-800 p-4 mb-8 rounded-lg">
             <div className="flex items-center">
@@ -604,47 +658,62 @@ const MenuPage = () => {
           </div>
         )}
         <p className="text-center text-gray-600 mb-16 text-lg">
-          Featuring {menuItems.length} carefully crafted dishes made with love ❤️
+          Featuring {menuItems.length} carefully crafted dishes made with love
+          ❤️
         </p>
-        
-        {categories.map(category => (
+
+        {categories.map((category) => (
           <div key={category} className="mb-16">
-            <h2 className="text-3xl font-semibold text-gray-900 mb-8 text-center">{category}</h2>
+            <h2 className="text-3xl font-semibold text-gray-900 mb-8 text-center">
+              {category}
+            </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {menuItems
-                .filter(item => item.category === category)
-                .map(item => (
-                  <div key={item.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
+                .filter((item) => item.category === category)
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100"
+                  >
                     <div className="p-8">
                       <div className="flex items-start justify-between mb-6">
                         <div className="flex-1">
-                          <div className="text-5xl mb-4 text-center">{item.image}</div>
-                          <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.name}</h3>
+                          <div className="text-5xl mb-4 text-center">
+                            {item.image}
+                          </div>
+                          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                            {item.name}
+                          </h3>
                           <div className="flex items-center justify-center mb-3">
                             <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span className="text-sm text-gray-600 ml-1 font-medium">{item.rating}</span>
+                            <span className="text-sm text-gray-600 ml-1 font-medium">
+                              {item.rating}
+                            </span>
                           </div>
                         </div>
                       </div>
-                      <p className="text-gray-600 mb-6 leading-relaxed text-center">{item.description}</p>
+                      <p className="text-gray-600 mb-6 leading-relaxed text-center">
+                        {item.description}
+                      </p>
                       <div className="flex items-center justify-between mb-6">
-                        <span className="text-3xl font-bold text-orange-600">${item.price}</span>
+                        <span className="text-3xl font-bold text-orange-600">
+                          ${item.price}
+                        </span>
                       </div>
                       <button
                         onClick={() => addToCart(item)}
                         disabled={!item.availability}
                         className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
-                          item.availability 
-                            ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white hover:shadow-lg' 
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          item.availability
+                            ? "bg-gradient-to-r from-orange-600 to-red-600 text-white hover:shadow-lg"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
                       >
-                        {item.availability ? 'Add to Cart' : 'Unavailable'}
+                        {item.availability ? "Add to Cart" : "Unavailable"}
                       </button>
                     </div>
                   </div>
-                ))
-              }
+                ))}
             </div>
           </div>
         ))}
@@ -655,21 +724,26 @@ const MenuPage = () => {
 
 // Cart Page Component
 const CartPage = () => {
-  const { cartItems, updateQuantity, removeFromCart, getTotalPrice } = useRestaurant();
+  const { cartItems, updateQuantity, removeFromCart, getTotalPrice } =
+    useRestaurant();
   const navigate = useNavigate();
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-5xl font-bold text-center text-gray-900 mb-12">Shopping Cart</h1>
-        
+        <h1 className="text-5xl font-bold text-center text-gray-900 mb-12">
+          Shopping Cart
+        </h1>
+
         {cartItems.length === 0 ? (
           <div className="text-center py-16">
             <ShoppingCart className="h-32 w-32 text-gray-300 mx-auto mb-6" />
             <p className="text-2xl text-gray-600 mb-6">Your cart is empty</p>
-            <p className="text-gray-500 mb-8">Add some delicious items from our menu!</p>
+            <p className="text-gray-500 mb-8">
+              Add some delicious items from our menu!
+            </p>
             <button
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate("/menu")}
               className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               Browse Menu
@@ -678,26 +752,39 @@ const CartPage = () => {
         ) : (
           <div>
             <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-              {cartItems.map(item => (
-                <div key={item.id} className="flex items-center justify-between p-8 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors">
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-8 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors"
+                >
                   <div className="flex items-center space-x-6">
                     <div className="text-3xl">{item.image}</div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">{item.name}</h3>
-                      <p className="text-orange-600 font-bold text-lg">${item.price}</p>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        {item.name}
+                      </h3>
+                      <p className="text-orange-600 font-bold text-lg">
+                        ${item.price}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-6">
                     <div className="flex items-center space-x-3 bg-gray-100 rounded-lg p-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
                         className="p-2 rounded-full bg-white hover:bg-gray-200 transition-colors shadow-sm"
                       >
                         <Minus className="h-4 w-4" />
                       </button>
-                      <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                      <span className="w-8 text-center font-semibold">
+                        {item.quantity}
+                      </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
                         className="p-2 rounded-full bg-white hover:bg-gray-200 transition-colors shadow-sm"
                       >
                         <Plus className="h-4 w-4" />
@@ -716,20 +803,20 @@ const CartPage = () => {
                 </div>
               ))}
             </div>
-            
+
             <div className="bg-white rounded-xl shadow-md p-8">
               <div className="flex justify-between items-center text-3xl font-bold text-gray-900 mb-8">
                 <span>Total: ${getTotalPrice().toFixed(2)}</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button 
-                  onClick={() => navigate('/menu')}
+                <button
+                  onClick={() => navigate("/menu")}
                   className="w-full bg-gray-200 text-gray-800 py-4 px-8 rounded-lg text-xl font-semibold hover:bg-gray-300 transition-all duration-300"
                 >
                   Continue Shopping
                 </button>
-                <button 
-                  onClick={() => navigate('/checkout')}
+                <button
+                  onClick={() => navigate("/checkout")}
                   className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 px-8 rounded-lg text-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                 >
                   Proceed to Checkout
@@ -748,21 +835,27 @@ const AboutPage = () => {
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 className="text-5xl font-bold text-center text-gray-900 mb-16">About Bella Vista</h1>
+        <h1 className="text-5xl font-bold text-center text-gray-900 mb-16">
+          About Bella Vista
+        </h1>
         <div className="bg-white rounded-xl shadow-md p-12">
           <div className="prose max-w-none">
             <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-              Welcome to Bella Vista, where passion meets culinary excellence. For over 20 years, we have been 
-              serving authentic Italian cuisine crafted with love and the finest ingredients sourced directly from Italy.
+              Welcome to Bella Vista, where passion meets culinary excellence.
+              For over 20 years, we have been serving authentic Italian cuisine
+              crafted with love and the finest ingredients sourced directly from
+              Italy.
             </p>
             <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-              Our chef-driven menu features traditional recipes passed down through generations, complemented 
-              by modern techniques and seasonal ingredients sourced from local farms. Every dish tells a story 
-              of heritage, tradition, and innovation.
+              Our chef-driven menu features traditional recipes passed down
+              through generations, complemented by modern techniques and
+              seasonal ingredients sourced from local farms. Every dish tells a
+              story of heritage, tradition, and innovation.
             </p>
             <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-              Whether you're dining in our restaurant or ordering for delivery, we're committed to providing 
-              an unforgettable culinary experience that brings the authentic taste of Italy to your table.
+              Whether you're dining in our restaurant or ordering for delivery,
+              we're committed to providing an unforgettable culinary experience
+              that brings the authentic taste of Italy to your table.
             </p>
             <div className="text-center mt-12">
               <p className="text-orange-600 font-semibold text-xl italic">
@@ -779,39 +872,47 @@ const AboutPage = () => {
 // Contact Page Component
 const ContactPage = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
+    name: "",
+    email: "",
+    message: "",
   });
 
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    console.log("Form submitted:", formData);
     // Here you would typically send the form data to your backend
-    alert('Thank you for your message! We\'ll get back to you soon.');
-    setFormData({ name: '', email: '', message: '' });
+    alert("Thank you for your message! We'll get back to you soon.");
+    setFormData({ name: "", email: "", message: "" });
   };
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 className="text-5xl font-bold text-center text-gray-900 mb-16">Contact Us</h1>
+        <h1 className="text-5xl font-bold text-center text-gray-900 mb-16">
+          Contact Us
+        </h1>
         <div className="grid md:grid-cols-2 gap-12">
           <div className="bg-white rounded-xl shadow-md p-10">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-8">Get in Touch</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-8">
+              Get in Touch
+            </h2>
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <MapPin className="h-6 w-6 text-orange-600 mt-1" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Address</h3>
-                  <p className="text-gray-700">123 Gourmet Street<br/>Food District, Culinary Quarter</p>
+                  <p className="text-gray-700">
+                    123 Gourmet Street
+                    <br />
+                    Food District, Culinary Quarter
+                  </p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -834,12 +935,16 @@ const ContactPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-md p-10">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-8">Send us a Message</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-8">
+              Send us a Message
+            </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Name
+                </label>
                 <input
                   type="text"
                   name="name"
@@ -850,7 +955,9 @@ const ContactPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -861,7 +968,9 @@ const ContactPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Message
+                </label>
                 <textarea
                   name="message"
                   value={formData.message}
@@ -885,12 +994,11 @@ const ContactPage = () => {
   );
 };
 
-
 // Enhanced CheckoutPage Component - Replace your current checkout in App.js
 
 // const CheckoutPage = () => {
 //   const { cartItems, getTotalPrice, clearCart, showNotification } = useRestaurant();
-  
+
 //    const { isAuthenticated, user, loading: authLoading } = useAuth();
 //   const navigate = useNavigate();
 
@@ -931,8 +1039,6 @@ const ContactPage = () => {
 //   }
 // }, [cartItems, orderSuccess, navigate]);
 
-
-
 //   // ADD THIS AUTH CHECK
 //   if (!isAuthenticated) {
 //     return (
@@ -941,7 +1047,6 @@ const ContactPage = () => {
 //       </div>
 //     );
 //   }
-
 
 //   // ADD THIS LOADING CHECK
 //   if (loading) {
@@ -956,8 +1061,6 @@ const ContactPage = () => {
 //     return null; // Will redirect via useEffect above
 //   }
 
-
-  
 //   // // Form state
 //   // const [formData, setFormData] = useState({
 //   //   firstName: '',
@@ -986,7 +1089,6 @@ const ContactPage = () => {
 //   //   return null;
 //   // }
 
-
 // // Add this early return:
 // if (cartItems.length === 0 && !orderSuccess) {
 //   return null;
@@ -1009,7 +1111,7 @@ const ContactPage = () => {
 //       newErrors.email = 'Please enter a valid email address';
 //     }
 
-//     // Phone validation  
+//     // Phone validation
 //     if (formData.phone && formData.phone.length < 10) {
 //       newErrors.phone = 'Please enter a valid phone number';
 //     }
@@ -1049,7 +1151,7 @@ const ContactPage = () => {
 //   // Handle order submission
 //   const handlePlaceOrder = async (e) => {
 //     e.preventDefault();
-    
+
 //     if (!validateForm()) {
 //       console.log('Form validation failed:', errors);
 //       showNotification('Please fill in all required fields', 'error');
@@ -1120,7 +1222,6 @@ const ContactPage = () => {
 
 //     console.log('Sending order data:', orderData); // Debug log
 
-
 //       // Submit order to backend
 //       const response = await axios.post(`${process.env.REACT_APP_API_URL}/orders`, orderData);
 //        console.log('Full response:', response);
@@ -1137,7 +1238,7 @@ const ContactPage = () => {
 //       const newOrderId = response.data.order?._id || response.data.data?._id;
 //       console.log('Order ID found:', newOrderId);
 //       setOrderId(newOrderId);
-        
+
 //         // Handle payment processing
 //         if (formData.paymentMethod === 'paystack') {
 //           await processPaystackPayment(newOrderId);
@@ -1177,13 +1278,13 @@ const ContactPage = () => {
 
 //       if (response.data.success) {
 //         const { authorization_url } = response.data.data;
-        
+
 //         // Redirect to Paystack payment page
 //         window.location.href = authorization_url;
 //       } else {
 //         throw new Error('Payment initialization failed');
 //       }
-      
+
 //     } catch (error) {
 //       console.error('Payment processing error:', error);
 //       showNotification('Payment initialization failed. Please try again.', 'error');
@@ -1238,10 +1339,10 @@ const ContactPage = () => {
 
 //         <form onSubmit={handlePlaceOrder}>
 //           <div className="grid lg:grid-cols-3 gap-8">
-            
+
 //             {/* Left Column - Forms */}
 //             <div className="lg:col-span-2 space-y-6">
-              
+
 //               {/* Customer Information */}
 //               <div className="bg-white rounded-xl shadow-sm p-6">
 //                 <h2 className="text-xl font-semibold mb-4 flex items-center">
@@ -1416,7 +1517,7 @@ const ContactPage = () => {
 //                       <p className="text-sm text-gray-500">Secure payment via Paystack</p>
 //                     </div>
 //                   </label>
-                  
+
 //                   <label className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
 //                     <input
 //                       type="radio"
@@ -1453,7 +1554,7 @@ const ContactPage = () => {
 //             <div className="lg:col-span-1">
 //               <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
 //                 <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
-                
+
 //                 {/* Order Items */}
 //                 <div className="space-y-4 mb-6">
 //                   {cartItems.map(item => (
@@ -1530,7 +1631,6 @@ const ContactPage = () => {
 //   );
 // };
 
-
 // Checkout Page Component (Placeholder for Phase 3)
 // const CheckoutPage = () => {
 //   const { cartItems, getTotalPrice, clearCart } = useRestaurant();
@@ -1552,7 +1652,7 @@ const ContactPage = () => {
 //     <div className="pt-16 min-h-screen bg-gray-50">
 //       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 //         <h1 className="text-5xl font-bold text-center text-gray-900 mb-12">Checkout</h1>
-        
+
 //         <div className="grid md:grid-cols-2 gap-8">
 //           {/* Order Summary */}
 //           <div className="bg-white rounded-xl shadow-md p-8">
@@ -1631,30 +1731,31 @@ const ContactPage = () => {
 // };
 
 const CheckoutPage = () => {
-  const { cartItems, getTotalPrice, clearCart, showNotification } = useRestaurant();
+  const { cartItems, getTotalPrice, clearCart, showNotification } =
+    useRestaurant();
   const navigate = useNavigate();
 
   // Form state
   const [formData, setFormData] = useState({
     // Customer Details
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+
     // Delivery Details
-    address: '',
-    city: '',
-    postalCode: '',
-    deliveryInstructions: '',
-    
+    address: "",
+    city: "",
+    postalCode: "",
+    deliveryInstructions: "",
+
     // Order Details
-    paymentMethod: 'card',
-    deliveryTime: 'asap',
-    scheduledTime: '',
-    
+    paymentMethod: "card",
+    deliveryTime: "asap",
+    scheduledTime: "",
+
     // Additional
-    notes: ''
+    notes: "",
   });
 
   // UI State
@@ -1663,9 +1764,21 @@ const CheckoutPage = () => {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
+  // Add this test function in your CheckoutPage component
+  const testBackendConnection = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/health");
+      console.log("Backend connection test:", response.data);
+      alert("Backend connected successfully");
+    } catch (error) {
+      console.error("Backend connection failed:", error);
+      alert("Backend connection failed");
+    }
+  };
+
   // Redirect if cart is empty
   if (cartItems.length === 0 && !orderSuccess) {
-    navigate('/cart');
+    navigate("/cart");
     return null;
   }
 
@@ -1674,28 +1787,30 @@ const CheckoutPage = () => {
     const newErrors = {};
 
     // Required fields
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
-    if (!formData.address.trim()) newErrors.address = 'Delivery address is required';
-    if (!formData.city.trim()) newErrors.city = 'City is required';
+    if (!formData.firstName.trim())
+      newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+    if (!formData.address.trim())
+      newErrors.address = "Delivery address is required";
+    if (!formData.city.trim()) newErrors.city = "City is required";
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     // Phone validation
     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Please enter a valid phone number';
+    if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s/g, ""))) {
+      newErrors.phone = "Please enter a valid phone number";
     }
 
     // Scheduled time validation
-    if (formData.deliveryTime === 'schedule' && !formData.scheduledTime) {
-      newErrors.scheduledTime = 'Please select a scheduled time';
+    if (formData.deliveryTime === "schedule" && !formData.scheduledTime) {
+      newErrors.scheduledTime = "Please select a scheduled time";
     }
 
     setErrors(newErrors);
@@ -1705,16 +1820,16 @@ const CheckoutPage = () => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -1726,148 +1841,388 @@ const CheckoutPage = () => {
   const total = subtotal + deliveryFee + tax;
 
   // Handle order submission
+  // const handlePlaceOrder = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!validateForm()) {
+  //     showNotification("Please fill in all required fields", "error");
+  //     return;
+  //   }
+
+  //   setLoading(true);
+
+  //   try {
+  //     // Prepare order data
+  //     const orderData = {
+  //       customer: {
+  //         firstName: formData.firstName,
+  //         lastName: formData.lastName,
+  //         email: formData.email,
+  //         phone: formData.phone,
+  //       },
+  //       delivery: {
+  //         address: formData.address,
+  //         city: formData.city,
+  //         postalCode: formData.postalCode,
+  //         instructions: formData.deliveryInstructions,
+  //         time: formData.deliveryTime,
+  //         scheduledTime: formData.scheduledTime,
+  //       },
+  //       items: cartItems.map((item) => ({
+  //         menuItem: item.id,
+  //         name: item.name,
+  //         price: item.price,
+  //         quantity: item.quantity,
+  //       })),
+  //       pricing: {
+  //         subtotal: subtotal,
+  //         deliveryFee: deliveryFee,
+  //         tax: tax,
+  //         total: total,
+  //       },
+  //       paymentMethod: formData.paymentMethod,
+  //       notes: formData.notes,
+  //       status: "pending",
+  //     };
+
+  //     // Submit order to backend
+
+  //     const response = await axios.post(`${API_BASE_URL}/orders`, orderData);
+
+  //     if (response.data.success) {
+  //       const newOrderId = response.data.data._id;
+  //       setOrderId(newOrderId);
+
+  //       // Handle payment processing
+  //       if (
+  //         formData.paymentMethod === "card" ||
+  //         formData.paymentMethod === "paystack"
+  //       ) {
+  //         await processPayment(newOrderId, total);
+  //       } else {
+  //         // Cash on delivery - order is complete
+  //         setOrderSuccess(true);
+  //         clearCart();
+  //         showNotification("Order placed successfully!", "success");
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Order submission error:", error);
+  //     showNotification(
+  //       error.response?.data?.message ||
+  //         "Failed to place order. Please try again.",
+  //       "error"
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // Replace your handlePlaceOrder function with this corrected version
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
-      showNotification('Please fill in all required fields', 'error');
+      showNotification("Please fill in all required fields", "error");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Prepare order data
+      // Calculate totals
+      const subtotal = getTotalPrice();
+      const deliveryFee = subtotal > 50 ? 0 : 5.99;
+      const tax = subtotal * 0.08;
+      const total = subtotal + deliveryFee + tax;
+
+      // Prepare order data in the format your backend expects
       const orderData = {
-        customer: {
+        customerInfo: {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          phone: formData.phone
-        },
-        delivery: {
+          phone: formData.phone,
           address: formData.address,
           city: formData.city,
           postalCode: formData.postalCode,
-          instructions: formData.deliveryInstructions,
-          time: formData.deliveryTime,
-          scheduledTime: formData.scheduledTime
+          deliveryInstructions: formData.deliveryInstructions,
+          notes: formData.notes,
         },
-        items: cartItems.map(item => ({
+        items: cartItems.map((item) => ({
           menuItem: item.id,
           name: item.name,
           price: item.price,
-          quantity: item.quantity
+          quantity: item.quantity,
         })),
-        pricing: {
-          subtotal: subtotal,
-          deliveryFee: deliveryFee,
-          tax: tax,
-          total: total
-        },
+        totalAmount: total,
         paymentMethod: formData.paymentMethod,
-        notes: formData.notes,
-        status: 'pending'
+        // Add paymentIntentId if using Stripe, or leave empty for cash
+        paymentIntentId: formData.paymentMethod === "cash" ? null : undefined,
       };
 
-      // Submit order to backend
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/orders`, orderData);
+      console.log("Sending order data:", orderData);
 
-      if (response.data.success) {
-        const newOrderId = response.data.data._id;
+      // Submit order to backend using API_BASE_URL instead of process.env
+      const response = await axios.post(`${API_BASE_URL}/orders`, orderData);
+
+      console.log("Backend response:", response.data);
+
+      // Check if response has order data (your backend returns both 'order' and 'data')
+      if (
+        response.data.success &&
+        (response.data.order || response.data.data)
+      ) {
+        const savedOrder = response.data.order || response.data.data;
+        const newOrderId = savedOrder._id;
+
+        console.log("Order created successfully with ID:", newOrderId);
         setOrderId(newOrderId);
-        
+
         // Handle payment processing
-        if (formData.paymentMethod === 'card' || formData.paymentMethod === 'paystack') {
+        // if (formData.paymentMethod === 'paystack') {
+        //   await processPaystackPayment(newOrderId);
+        // } else if (formData.paymentMethod === 'card') {
+        //   await processStripePayment(newOrderId, total);
+        // } else {
+        //   // Cash on delivery - order is complete
+        //   setOrderSuccess(true);
+        //   clearCart();
+        //   showNotification('Order placed successfully!', 'success');
+        // }
+
+        // Handle payment processing
+        if (formData.paymentMethod === "paystack") {
+          await processPayment(newOrderId, total);
+        } else if (formData.paymentMethod === "card") {
           await processPayment(newOrderId, total);
         } else {
           // Cash on delivery - order is complete
           setOrderSuccess(true);
           clearCart();
-          showNotification('Order placed successfully!', 'success');
+          showNotification("Order placed successfully!", "success");
         }
+      } else {
+        console.log("Unexpected response format:", response.data);
+        showNotification(
+          "Order may have been created but response format is unexpected",
+          "warning"
+        );
       }
     } catch (error) {
-      console.error('Order submission error:', error);
+      console.error("Order submission error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url,
+      });
+
       showNotification(
-        error.response?.data?.message || 'Failed to place order. Please try again.',
-        'error'
+        error.response?.data?.message ||
+          "Failed to place order. Please try again.",
+        "error"
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // // Process payment (placeholder for Stripe/Paystack integration)
+  // const processPayment = async (orderId, amount) => {
+  //   try {
+  //     // This is where you'd integrate with Stripe, Paystack, etc.
+  //     // For now, we'll simulate a successful payment
+
+  //     if (formData.paymentMethod === "paystack") {
+  //       // Paystack integration would go here
+  //       await simulatePaystackPayment(orderId, amount);
+  //     } else {
+  //       // Stripe integration would go here
+  //       await simulateStripePayment(orderId, amount);
+  //     }
+
+  //     setOrderSuccess(true);
+  //     clearCart();
+  //     showNotification("Payment successful! Order confirmed.", "success");
+  //   } catch (error) {
+  //     console.error("Payment processing error:", error);
+  //     showNotification("Payment failed. Please try again.", "error");
+  //   }
+  // };
+
+  // // Simulate payment processing (replace with real payment integration)
+  // const simulatePaystackPayment = async (orderId, amount) => {
+  //   // Simulate API call delay
+  //   await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  //   // Simulate random success/failure for demo
+  //   if (Math.random() > 0.1) {
+  //     // 90% success rate
+  //     return { success: true, transactionId: "TXN_" + Date.now() };
+  //   } else {
+  //     throw new Error("Payment declined");
+  //   }
+  // };
+
+  // const simulateStripePayment = async (orderId, amount) => {
+  //   // Similar simulation for Stripe
+  //   await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  //   if (Math.random() > 0.1) {
+  //     return { success: true, transactionId: "STRIPE_" + Date.now() };
+  //   } else {
+  //     throw new Error("Card declined");
+  //   }
+  // };
+
+  // Add these functions inside your CheckoutPage component, after the handlePlaceOrder function:
+
   // Process payment (placeholder for Stripe/Paystack integration)
+  // const processPayment = async (orderId, amount) => {
+  //   try {
+  //     if (formData.paymentMethod === 'paystack') {
+  //       await simulatePaystackPayment(orderId, amount);
+  //     } else {
+  //       await simulateStripePayment(orderId, amount);
+  //     }
+
+  //     setOrderSuccess(true);
+  //     clearCart();
+  //     showNotification('Payment successful! Order confirmed.', 'success');
+  //   } catch (error) {
+  //     console.error('Payment processing error:', error);
+  //     showNotification('Payment failed. Please try again.', 'error');
+  //   }
+  // };
+
+  // // Simulate payment processing
+  // const simulatePaystackPayment = async (orderId, amount) => {
+  //   await new Promise((resolve) => setTimeout(resolve, 2000));
+  //   if (Math.random() > 0.1) {
+  //     return { success: true, transactionId: "TXN_" + Date.now() };
+  //   } else {
+  //     throw new Error("Payment declined");
+  //   }
+  // };
+
+  // const simulateStripePayment = async (orderId, amount) => {
+  //   await new Promise((resolve) => setTimeout(resolve, 2000));
+  //   if (Math.random() > 0.1) {
+  //     return { success: true, transactionId: "STRIPE_" + Date.now() };
+  //   } else {
+  //     throw new Error("Card declined");
+  //   }
+  // };
+
+  // Replace the payment processing functions in your CheckoutPage with these:
+
+  // Process real payment
   const processPayment = async (orderId, amount) => {
     try {
-      // This is where you'd integrate with Stripe, Paystack, etc.
-      // For now, we'll simulate a successful payment
-      
-      if (formData.paymentMethod === 'paystack') {
-        // Paystack integration would go here
-        await simulatePaystackPayment(orderId, amount);
+      if (formData.paymentMethod === "paystack") {
+        await initializePaystackPayment(orderId);
+      } else if (formData.paymentMethod === "card") {
+        // For now, redirect to Paystack for card payments too
+        await initializePaystackPayment(orderId);
       } else {
-        // Stripe integration would go here
-        await simulateStripePayment(orderId, amount);
+        // Cash on delivery - no payment processing needed
+        setOrderSuccess(true);
+        clearCart();
+        showNotification("Order placed successfully!", "success");
       }
-      
-      setOrderSuccess(true);
-      clearCart();
-      showNotification('Payment successful! Order confirmed.', 'success');
-      
     } catch (error) {
-      console.error('Payment processing error:', error);
-      showNotification('Payment failed. Please try again.', 'error');
+      console.error("Payment processing error:", error);
+      showNotification("Payment processing failed. Please try again.", "error");
     }
   };
 
-  // Simulate payment processing (replace with real payment integration)
-  const simulatePaystackPayment = async (orderId, amount) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Simulate random success/failure for demo
-    if (Math.random() > 0.1) { // 90% success rate
-      return { success: true, transactionId: 'TXN_' + Date.now() };
-    } else {
-      throw new Error('Payment declined');
-    }
-  };
+  // Initialize Paystack payment
+  const initializePaystackPayment = async (orderId) => {
+    try {
+      showNotification("Initializing payment...", "info");
 
-  const simulateStripePayment = async (orderId, amount) => {
-    // Similar simulation for Stripe
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    if (Math.random() > 0.1) {
-      return { success: true, transactionId: 'STRIPE_' + Date.now() };
-    } else {
-      throw new Error('Card declined');
+      const response = await axios.post(`${API_BASE_URL}/payment/initialize`, {
+        orderId: orderId,
+      });
+
+      if (response.data.success) {
+        // Redirect to Paystack payment page
+        window.location.href = response.data.data.authorization_url;
+      } else {
+        throw new Error(
+          response.data.message || "Payment initialization failed"
+        );
+      }
+    } catch (error) {
+      console.error("Paystack initialization error:", error);
+      throw new Error(
+        error.response?.data?.message || "Payment initialization failed"
+      );
     }
   };
 
   // Success page
+  // if (orderSuccess) {
+  //   return (
+  //     <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
+  //         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+  //         <h1 className="text-2xl font-bold text-gray-900 mb-4">
+  //           Order Confirmed!
+  //         </h1>
+  //         <p className="text-gray-600 mb-2">Thank you for your order!</p>
+  //         {orderId && (
+  //           <p className="text-sm text-gray-500 mb-6">
+  //             Order ID: <span className="font-mono">{orderId.slice(-8)}</span>
+  //           </p>
+  //         )}
+  //         <div className="space-y-3">
+  //           <button
+  //             onClick={() => navigate("/orders")} // Will be implemented in Phase 5
+  //             className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
+  //           >
+  //             Track Your Order
+  //           </button>
+  //           <button
+  //             onClick={() => navigate("/")}
+  //             className="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+  //           >
+  //             Back to Home
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  // Replace the success page section in your CheckoutPage with this:
   if (orderSuccess) {
     return (
       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Order Confirmed!</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Order Confirmed!
+          </h1>
           <p className="text-gray-600 mb-2">Thank you for your order!</p>
           {orderId && (
             <p className="text-sm text-gray-500 mb-6">
-              Order ID: <span className="font-mono">{orderId.slice(-8)}</span>
+              Order ID:{" "}
+              <span className="font-mono">
+                {"ORD-" + orderId.slice(-8).toUpperCase()}
+              </span>
             </p>
           )}
           <div className="space-y-3">
             <button
-              onClick={() => navigate('/orders')} // Will be implemented in Phase 5
+              onClick={() => navigate("/track-order/" + orderId)}
               className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
             >
               Track Your Order
             </button>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
             >
               Back to Home
@@ -1884,7 +2239,7 @@ const CheckoutPage = () => {
         {/* Header */}
         <div className="flex items-center mb-8">
           <button
-            onClick={() => navigate('/cart')}
+            onClick={() => navigate("/cart")}
             className="mr-4 p-2 text-gray-600 hover:text-orange-600 transition-colors"
           >
             <ArrowLeft className="h-6 w-6" />
@@ -1894,10 +2249,8 @@ const CheckoutPage = () => {
 
         <form onSubmit={handlePlaceOrder}>
           <div className="grid lg:grid-cols-3 gap-8">
-            
             {/* Left Column - Forms */}
             <div className="lg:col-span-2 space-y-6">
-              
               {/* Customer Information */}
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-xl font-semibold mb-4 flex items-center">
@@ -1915,11 +2268,13 @@ const CheckoutPage = () => {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all ${
-                        errors.firstName ? 'border-red-500' : 'border-gray-300'
+                        errors.firstName ? "border-red-500" : "border-gray-300"
                       }`}
                     />
                     {errors.firstName && (
-                      <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.firstName}
+                      </p>
                     )}
                   </div>
                   <div>
@@ -1932,11 +2287,13 @@ const CheckoutPage = () => {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all ${
-                        errors.lastName ? 'border-red-500' : 'border-gray-300'
+                        errors.lastName ? "border-red-500" : "border-gray-300"
                       }`}
                     />
                     {errors.lastName && (
-                      <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.lastName}
+                      </p>
                     )}
                   </div>
                   <div>
@@ -1949,11 +2306,13 @@ const CheckoutPage = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all ${
-                        errors.email ? 'border-red-500' : 'border-gray-300'
+                        errors.email ? "border-red-500" : "border-gray-300"
                       }`}
                     />
                     {errors.email && (
-                      <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.email}
+                      </p>
                     )}
                   </div>
                   <div>
@@ -1966,11 +2325,13 @@ const CheckoutPage = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all ${
-                        errors.phone ? 'border-red-500' : 'border-gray-300'
+                        errors.phone ? "border-red-500" : "border-gray-300"
                       }`}
                     />
                     {errors.phone && (
-                      <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.phone}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -1994,11 +2355,13 @@ const CheckoutPage = () => {
                       onChange={handleInputChange}
                       placeholder="Street address, building, apartment"
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all ${
-                        errors.address ? 'border-red-500' : 'border-gray-300'
+                        errors.address ? "border-red-500" : "border-gray-300"
                       }`}
                     />
                     {errors.address && (
-                      <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.address}
+                      </p>
                     )}
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
@@ -2012,11 +2375,13 @@ const CheckoutPage = () => {
                         value={formData.city}
                         onChange={handleInputChange}
                         className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all ${
-                          errors.city ? 'border-red-500' : 'border-gray-300'
+                          errors.city ? "border-red-500" : "border-gray-300"
                         }`}
                       />
                       {errors.city && (
-                        <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.city}
+                        </p>
                       )}
                     </div>
                     <div>
@@ -2068,21 +2433,27 @@ const CheckoutPage = () => {
                       <span className="text-gray-700">{time.label}</span>
                     </label>
                   ))}
-                  
-                  {formData.deliveryTime === 'schedule' && (
+
+                  {formData.deliveryTime === "schedule" && (
                     <div className="ml-6 mt-3">
                       <input
                         type="datetime-local"
                         name="scheduledTime"
                         value={formData.scheduledTime}
                         onChange={handleInputChange}
-                        min={new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)}
+                        min={new Date(Date.now() + 2 * 60 * 60 * 1000)
+                          .toISOString()
+                          .slice(0, 16)}
                         className={`px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all ${
-                          errors.scheduledTime ? 'border-red-500' : 'border-gray-300'
+                          errors.scheduledTime
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
                       />
                       {errors.scheduledTime && (
-                        <p className="text-red-500 text-sm mt-1">{errors.scheduledTime}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.scheduledTime}
+                        </p>
                       )}
                     </div>
                   )}
@@ -2099,7 +2470,10 @@ const CheckoutPage = () => {
                   {PAYMENT_METHODS.map((method) => {
                     const IconComponent = method.icon;
                     return (
-                      <label key={method.id} className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                      <label
+                        key={method.id}
+                        className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
                         <input
                           type="radio"
                           name="paymentMethod"
@@ -2109,7 +2483,9 @@ const CheckoutPage = () => {
                           className="mr-3 text-orange-600"
                         />
                         <IconComponent className="h-5 w-5 mr-3 text-gray-600" />
-                        <span className="font-medium text-gray-700">{method.name}</span>
+                        <span className="font-medium text-gray-700">
+                          {method.name}
+                        </span>
                       </label>
                     );
                   })}
@@ -2134,13 +2510,18 @@ const CheckoutPage = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
                 <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
-                
+
                 {/* Order Items */}
                 <div className="space-y-4 mb-6">
-                  {cartItems.map(item => (
-                    <div key={item.id} className="flex justify-between items-start">
+                  {cartItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex justify-between items-start"
+                    >
                       <div className="flex-1">
-                        <span className="font-medium text-gray-900">{item.name}</span>
+                        <span className="font-medium text-gray-900">
+                          {item.name}
+                        </span>
                         <div className="text-sm text-gray-500">
                           ${item.price} x {item.quantity}
                         </div>
@@ -2160,7 +2541,11 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Delivery Fee</span>
-                    <span>{deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}</span>
+                    <span>
+                      {deliveryFee === 0
+                        ? "FREE"
+                        : `$${deliveryFee.toFixed(2)}`}
+                    </span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Tax</span>
@@ -2180,6 +2565,14 @@ const CheckoutPage = () => {
                     </p>
                   </div>
                 )}
+
+                <button
+                  type="button"
+                  onClick={testBackendConnection}
+                  className="w-full bg-blue-500 text-white py-2 px-4 rounded mb-4"
+                >
+                  Test Backend Connection
+                </button>
 
                 {/* Place Order Button */}
                 <button
@@ -2211,10 +2604,6 @@ const CheckoutPage = () => {
   );
 };
 
-
-
-
-
 // 404 Not Found Page
 const NotFoundPage = () => {
   const navigate = useNavigate();
@@ -2223,10 +2612,14 @@ const NotFoundPage = () => {
     <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-9xl font-bold text-gray-300">404</h1>
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Page Not Found</h2>
-        <p className="text-gray-500 mb-8">The page you're looking for doesn't exist.</p>
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+          Page Not Found
+        </h2>
+        <p className="text-gray-500 mb-8">
+          The page you're looking for doesn't exist.
+        </p>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
         >
           Go Home
@@ -2249,13 +2642,17 @@ const PaymentCallbackPage = () => {
     const verifyPayment = async () => {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        const reference = urlParams.get('reference');
-        
+        const reference = urlParams.get("reference");
+
         if (!reference) {
-          setPaymentStatus('error');
+          setPaymentStatus("error");
           setLoading(false);
           return;
         }
+
+        //         const response = await axios.get(
+        //   `${API_BASE_URL}/payment/verify/${reference}`
+        // )
 
         // Verify payment with backend
         const response = await axios.get(
@@ -2263,15 +2660,15 @@ const PaymentCallbackPage = () => {
         );
 
         if (response.data.success) {
-          setPaymentStatus('success');
+          setPaymentStatus("success");
           setOrderData(response.data.data.order);
           clearCart();
         } else {
-          setPaymentStatus('failed');
+          setPaymentStatus("failed");
         }
       } catch (error) {
-        console.error('Payment verification error:', error);
-        setPaymentStatus('error');
+        console.error("Payment verification error:", error);
+        setPaymentStatus("error");
       } finally {
         setLoading(false);
       }
@@ -2285,56 +2682,127 @@ const PaymentCallbackPage = () => {
       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader className="h-16 w-16 text-orange-600 animate-spin mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Verifying Payment</h2>
-          <p className="text-gray-600">Please wait while we confirm your payment...</p>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            Verifying Payment
+          </h2>
+          <p className="text-gray-600">
+            Please wait while we confirm your payment...
+          </p>
         </div>
       </div>
     );
   }
 
-  if (paymentStatus === 'success' && orderData) {
-    return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
-          <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Payment Successful!</h1>
-          <p className="text-gray-600 mb-4">Your order has been confirmed and payment received.</p>
-          
-          <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-600">Order Number:</span>
-              <span className="font-mono font-semibold">{orderData.orderNumber}</span>
-            </div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-600">Total Paid:</span>
-              <span className="font-semibold text-green-600">₦{orderData.pricing.total.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Status:</span>
-              <span className="font-semibold text-orange-600 capitalize">
-                {orderData.status.replace('_', ' ')}
-              </span>
-            </div>
-          </div>
+  // if (paymentStatus === "success" && orderData) {
+  //   return (
+  //     <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
+  //         <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
+  //         <h1 className="text-3xl font-bold text-gray-900 mb-4">
+  //           Payment Successful!
+  //         </h1>
+  //         <p className="text-gray-600 mb-4">
+  //           Your order has been confirmed and payment received.
+  //         </p>
 
-          <div className="space-y-3">
-            <button
-              onClick={() => navigate('/track-order/' + orderData._id)}
-              className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
-            >
-              Track Your Order
-            </button>
-            <button
-              onClick={() => navigate('/')}
-              className="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-            >
-              Continue Shopping
-            </button>
+  //         <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+  //           <div className="flex justify-between items-center mb-2">
+  //             <span className="text-gray-600">Order Number:</span>
+  //             {/* <span className="font-mono font-semibold">
+  //               {orderData.orderNumber}
+  //             </span> */}
+  //             <span className="font-mono font-semibold">
+  //               {"ORD-" + orderData._id.slice(-8).toUpperCase()}
+  //             </span>
+  //           </div>
+  //           <div className="flex justify-between items-center mb-2">
+  //             <span className="text-gray-600">Total Paid:</span>
+  //             <span className="font-semibold text-green-600">
+  //               ₦{orderData.totalAmount.toFixed(2)}
+  //             </span>
+  //           </div>
+  //           <div className="flex justify-between items-center">
+  //             <span className="text-gray-600">Status:</span>
+  //             {/* <span className="font-semibold text-orange-600 capitalize">
+  //               {orderData.status.replace("_", " ")}
+  //             </span> */}
+  //             <span className="font-semibold text-orange-600 capitalize">
+  //               {orderData.status}
+  //             </span>
+  //           </div>
+  //         </div>
+
+  //         <div className="space-y-3">
+  //           <button
+  //             onClick={() => navigate("/track-order/" + orderData._id)}
+  //             className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
+  //           >
+  //             Track Your Order
+  //           </button>
+  //           <button
+  //             onClick={() => navigate("/")}
+  //             className="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+  //           >
+  //             Continue Shopping
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  // Replace the success section in PaymentCallbackPage with this:
+if (paymentStatus === "success" && orderData) {
+  return (
+    <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
+        <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          Payment Successful!
+        </h1>
+        <p className="text-gray-600 mb-4">
+          Your order has been confirmed and payment received.
+        </p>
+
+        <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-gray-600">Order Number:</span>
+            <span className="font-mono font-semibold">
+              {'ORD-' + orderData._id.slice(-8).toUpperCase()}
+            </span>
+          </div>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-gray-600">Total Paid:</span>
+            <span className="font-semibold text-green-600">
+              ${orderData.totalAmount.toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Status:</span>
+            <span className="font-semibold text-orange-600 capitalize">
+              {orderData.status}
+            </span>
           </div>
         </div>
+
+        <div className="space-y-3">
+          <button
+            onClick={() => navigate("/track-order/" + orderData._id)}
+            className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
+          >
+            Track Your Order
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+          >
+            Continue Shopping
+          </button>
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // Payment failed or error
   return (
@@ -2342,24 +2810,23 @@ const PaymentCallbackPage = () => {
       <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
         <X className="h-20 w-20 text-red-500 mx-auto mb-6" />
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          {paymentStatus === 'failed' ? 'Payment Failed' : 'Payment Error'}
+          {paymentStatus === "failed" ? "Payment Failed" : "Payment Error"}
         </h1>
         <p className="text-gray-600 mb-6">
-          {paymentStatus === 'failed' 
-            ? 'Your payment could not be processed. Please try again.'
-            : 'There was an error verifying your payment. Please contact support.'
-          }
+          {paymentStatus === "failed"
+            ? "Your payment could not be processed. Please try again."
+            : "There was an error verifying your payment. Please contact support."}
         </p>
-        
+
         <div className="space-y-3">
           <button
-            onClick={() => navigate('/checkout')}
+            onClick={() => navigate("/checkout")}
             className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
           >
             Try Again
           </button>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
           >
             Back to Home
@@ -2370,29 +2837,654 @@ const PaymentCallbackPage = () => {
   );
 };
 
-
-
-
-
 // Order Tracking Component - Add this to your App.js
 
+// const OrderTrackingPage = () => {
+//   const { id } = useParams();
+//   const [order, setOrder] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+
+//   useEffect(() => {
+//     const fetchOrder = async () => {
+//       try {
+//         const response = await axios.get(
+//           `${process.env.REACT_APP_API_URL}/orders/${id}`
+//         );
+//         if (response.data.success) {
+//           setOrder(response.data.data);
+//         } else {
+//           setError("Order not found");
+//         }
+//       } catch (err) {
+//         setError("Failed to fetch order details");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     if (id) {
+//       fetchOrder();
+//     }
+//   }, [id]);
+
+//   // Status step configuration
+//   const statusSteps = [
+//     { key: "pending", label: "Order Placed", icon: Clock },
+//     { key: "confirmed", label: "Confirmed", icon: CheckCircle },
+//     { key: "preparing", label: "Preparing", icon: UtensilsCrossed },
+//     { key: "ready", label: "Ready", icon: Package },
+//     { key: "out_for_delivery", label: "Out for Delivery", icon: Truck },
+//     { key: "delivered", label: "Delivered", icon: CheckCircle },
+//   ];
+
+//   const getStatusIndex = (status) => {
+//     return statusSteps.findIndex((step) => step.key === status);
+//   };
+
+//   const getStatusColor = (stepIndex, currentIndex) => {
+//     if (stepIndex <= currentIndex) return "text-green-600 bg-green-100";
+//     return "text-gray-400 bg-gray-100";
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+//         <div className="text-center">
+//           <Loader className="h-16 w-16 text-orange-600 animate-spin mx-auto mb-4" />
+//           <p className="text-gray-600 text-lg">Loading order details...</p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   if (error || !order) {
+//     return (
+//       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+//         <div className="text-center">
+//           <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+//           <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+//             Order Not Found
+//           </h2>
+//           <p className="text-gray-600 mb-6">{error}</p>
+//           <button
+//             onClick={() => window.history.back()}
+//             className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
+//           >
+//             Go Back
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   const currentStatusIndex = getStatusIndex(order.status);
+
+//   return (
+//     <div className="pt-16 min-h-screen bg-gray-50">
+//       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+//         {/* Header */}
+//         <div className="mb-8">
+//           <h1 className="text-4xl font-bold text-gray-900 mb-2">
+//             Track Your Order
+//           </h1>
+//           <p className="text-gray-600">Order #{order.orderNumber}</p>
+//         </div>
+
+//         <div className="grid lg:grid-cols-3 gap-8">
+//           {/* Order Progress */}
+//           <div className="lg:col-span-2">
+//             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+//               <h2 className="text-xl font-semibold mb-6">Order Progress</h2>
+
+//               <div className="space-y-4">
+//                 {statusSteps.map((step, index) => {
+//                   const IconComponent = step.icon;
+//                   const isCompleted = index <= currentStatusIndex;
+//                   const isActive = index === currentStatusIndex;
+
+//                   return (
+//                     <div key={step.key} className="flex items-center">
+//                       <div
+//                         className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
+//                           isCompleted
+//                             ? "bg-green-100 text-green-600"
+//                             : "bg-gray-100 text-gray-400"
+//                         }`}
+//                       >
+//                         <IconComponent className="h-5 w-5" />
+//                       </div>
+//                       <div className="flex-1">
+//                         <p
+//                           className={`font-medium ${
+//                             isCompleted ? "text-gray-900" : "text-gray-400"
+//                           }`}
+//                         >
+//                           {step.label}
+//                         </p>
+//                         {isActive && (
+//                           <p className="text-sm text-orange-600">
+//                             Current status
+//                           </p>
+//                         )}
+//                       </div>
+//                       {index < statusSteps.length - 1 && (
+//                         <div
+//                           className={`w-px h-8 ml-5 ${
+//                             isCompleted ? "bg-green-200" : "bg-gray-200"
+//                           }`}
+//                         ></div>
+//                       )}
+//                     </div>
+//                   );
+//                 })}
+//               </div>
+
+//               {/* Status History */}
+//               {order.statusHistory && order.statusHistory.length > 0 && (
+//                 <div className="mt-8 pt-6 border-t border-gray-200">
+//                   <h3 className="text-lg font-semibold mb-4">Status History</h3>
+//                   <div className="space-y-3">
+//                     {order.statusHistory
+//                       .slice()
+//                       .reverse()
+//                       .map((history, index) => (
+//                         <div
+//                           key={index}
+//                           className="flex justify-between items-center text-sm"
+//                         >
+//                           <span className="capitalize font-medium">
+//                             {history.status.replace("_", " ")}
+//                           </span>
+//                           <span className="text-gray-500">
+//                             {new Date(history.timestamp).toLocaleString()}
+//                           </span>
+//                         </div>
+//                       ))}
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* Order Items */}
+//             <div className="bg-white rounded-xl shadow-sm p-6">
+//               <h2 className="text-xl font-semibold mb-4">Order Items</h2>
+//               <div className="space-y-4">
+//                 {order.items.map((item, index) => (
+//                   <div
+//                     key={index}
+//                     className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0"
+//                   >
+//                     <div className="flex-1">
+//                       <h3 className="font-medium text-gray-900">{item.name}</h3>
+//                       <p className="text-sm text-gray-500">
+//                         ₦{item.price} each
+//                       </p>
+//                     </div>
+//                     <div className="text-center">
+//                       <p className="font-medium">x{item.quantity}</p>
+//                     </div>
+//                     <div className="text-right">
+//                       <p className="font-semibold">
+//                         ₦{(item.price * item.quantity).toFixed(2)}
+//                       </p>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Order Summary Sidebar */}
+//           <div className="lg:col-span-1">
+//             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+//               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+
+//               <div className="space-y-3">
+//                 <div className="flex justify-between">
+//                   <span className="text-gray-600">Subtotal</span>
+//                   <span>₦{order.pricing.subtotal.toFixed(2)}</span>
+//                 </div>
+//                 <div className="flex justify-between">
+//                   <span className="text-gray-600">Delivery Fee</span>
+//                   <span>₦{order.pricing.deliveryFee.toFixed(2)}</span>
+//                 </div>
+//                 <div className="flex justify-between">
+//                   <span className="text-gray-600">Tax</span>
+//                   <span>₦{order.pricing.tax.toFixed(2)}</span>
+//                 </div>
+//                 <div className="flex justify-between font-semibold text-lg pt-2 border-t border-gray-200">
+//                   <span>Total</span>
+//                   <span>₦{order.pricing.total.toFixed(2)}</span>
+//                 </div>
+//               </div>
+
+//               <div className="mt-6 pt-6 border-t border-gray-200">
+//                 <div className="flex items-center justify-between mb-2">
+//                   <span className="text-gray-600">Payment Status</span>
+//                   <span
+//                     className={`px-2 py-1 rounded-full text-xs font-medium ${
+//                       order.paymentStatus === "paid"
+//                         ? "bg-green-100 text-green-800"
+//                         : "bg-yellow-100 text-yellow-800"
+//                     }`}
+//                   >
+//                     {order.paymentStatus.toUpperCase()}
+//                   </span>
+//                 </div>
+//                 <div className="flex items-center justify-between">
+//                   <span className="text-gray-600">Payment Method</span>
+//                   <span className="capitalize">{order.paymentMethod}</span>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Delivery Information */}
+//             <div className="bg-white rounded-xl shadow-sm p-6">
+//               <h2 className="text-xl font-semibold mb-4">Delivery Details</h2>
+
+//               <div className="space-y-3">
+//                 <div>
+//                   <span className="text-gray-600 text-sm">Customer</span>
+//                   <p className="font-medium">
+//                     {order.customer.firstName} {order.customer.lastName}
+//                   </p>
+//                 </div>
+
+//                 <div>
+//                   <span className="text-gray-600 text-sm">Phone</span>
+//                   <p className="font-medium">{order.customer.phone}</p>
+//                 </div>
+
+//                 <div>
+//                   <span className="text-gray-600 text-sm">Address</span>
+//                   <p className="font-medium">
+//                     {order.delivery.address}, {order.delivery.city}
+//                     {order.delivery.postalCode &&
+//                       `, ${order.delivery.postalCode}`}
+//                   </p>
+//                 </div>
+
+//                 {order.delivery.instructions && (
+//                   <div>
+//                     <span className="text-gray-600 text-sm">Instructions</span>
+//                     <p className="font-medium">{order.delivery.instructions}</p>
+//                   </div>
+//                 )}
+
+//                 {order.estimatedDeliveryTime && (
+//                   <div>
+//                     <span className="text-gray-600 text-sm">
+//                       Estimated Delivery
+//                     </span>
+//                     <p className="font-medium">
+//                       {new Date(order.estimatedDeliveryTime).toLocaleString()}
+//                     </p>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// Updated OrderTrackingPage component - Replace your existing one
+// const OrderTrackingPage = () => {
+//   const { id } = useParams();
+//   const [order, setOrder] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     const fetchOrder = async () => {
+//       try {
+//         console.log('Fetching order with ID:', id);
+//         const response = await axios.get(`${API_BASE_URL}/orders/${id}`);
+
+//         console.log('Order fetch response:', response.data);
+
+//         if (response.data.success) {
+//           setOrder(response.data.data);
+//         } else {
+//           setError("Order not found");
+//         }
+//       } catch (err) {
+//         console.error('Order fetch error:', err);
+//         setError("Failed to fetch order details");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     if (id) {
+//       fetchOrder();
+
+//       // Set up polling to refresh order status every 30 seconds
+//       const interval = setInterval(fetchOrder, 30000);
+//       return () => clearInterval(interval);
+//     }
+//   }, [id]);
+
+//   // Status step configuration matching your simple status system
+//   const statusSteps = [
+//     { key: "pending", label: "Order Placed", icon: Clock, description: "Your order has been received" },
+//     { key: "confirmed", label: "Confirmed", icon: CheckCircle, description: "Restaurant confirmed your order" },
+//     { key: "preparing", label: "Preparing", icon: UtensilsCrossed, description: "Your food is being prepared" },
+//     { key: "ready", label: "Ready", icon: Package, description: "Order is ready for pickup/delivery" },
+//     { key: "out_for_delivery", label: "Out for Delivery", icon: Truck, description: "Order is on the way" },
+//     { key: "delivered", label: "Delivered", icon: CheckCircle, description: "Order has been delivered" },
+//   ];
+
+//   const getStatusIndex = (status) => {
+//     return statusSteps.findIndex((step) => step.key === status);
+//   };
+
+//   const getCurrentStep = () => {
+//     if (!order) return 0;
+//     const index = getStatusIndex(order.status);
+//     return index >= 0 ? index : 0;
+//   };
+
+//   // Generate a readable order number from the ID
+//   const getOrderNumber = (orderId) => {
+//     return 'ORD-' + orderId.slice(-8).toUpperCase();
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+//         <div className="text-center">
+//           <Loader className="h-16 w-16 text-orange-600 animate-spin mx-auto mb-4" />
+//           <p className="text-gray-600 text-lg">Loading order details...</p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   if (error || !order) {
+//     return (
+//       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+//         <div className="text-center">
+//           <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+//           <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+//             Order Not Found
+//           </h2>
+//           <p className="text-gray-600 mb-6">{error}</p>
+//           <div className="space-y-3">
+//             <button
+//               onClick={() => navigate('/')}
+//               className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
+//             >
+//               Back to Home
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   const currentStatusIndex = getCurrentStep();
+//   const currentStatus = statusSteps[currentStatusIndex];
+
+//   return (
+//     <div className="pt-16 min-h-screen bg-gray-50">
+//       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+//         {/* Header */}
+//         <div className="mb-8">
+//           <button
+//             onClick={() => navigate('/')}
+//             className="flex items-center text-gray-600 hover:text-orange-600 transition-colors mb-4"
+//           >
+//             <ArrowLeft className="h-5 w-5 mr-2" />
+//             Back to Home
+//           </button>
+//           <h1 className="text-4xl font-bold text-gray-900 mb-2">
+//             Track Your Order
+//           </h1>
+//           <p className="text-gray-600">Order #{getOrderNumber(order._id)}</p>
+//           <p className="text-sm text-gray-500">
+//             Placed on {new Date(order.createdAt).toLocaleDateString()} at{' '}
+//             {new Date(order.createdAt).toLocaleTimeString()}
+//           </p>
+//         </div>
+
+//         <div className="grid lg:grid-cols-3 gap-8">
+//           {/* Order Progress */}
+//           <div className="lg:col-span-2">
+//             {/* Current Status Card */}
+//             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+//               <div className="flex items-center justify-between mb-4">
+//                 <h2 className="text-xl font-semibold">Current Status</h2>
+//                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+//                   order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+//                   order.status === 'out_for_delivery' ? 'bg-blue-100 text-blue-800' :
+//                   order.status === 'preparing' ? 'bg-orange-100 text-orange-800' :
+//                   'bg-gray-100 text-gray-800'
+//                 }`}>
+//                   {currentStatus?.label || order.status.replace('_', ' ').toUpperCase()}
+//                 </span>
+//               </div>
+
+//               {currentStatus && (
+//                 <div className="flex items-center">
+//                   <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+//                     <currentStatus.icon className="h-6 w-6 text-orange-600" />
+//                   </div>
+//                   <div>
+//                     <p className="text-lg font-medium text-gray-900">{currentStatus.label}</p>
+//                     <p className="text-gray-600">{currentStatus.description}</p>
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* Progress Steps */}
+//             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+//               <h2 className="text-xl font-semibold mb-6">Order Progress</h2>
+
+//               <div className="space-y-6">
+//                 {statusSteps.map((step, index) => {
+//                   const IconComponent = step.icon;
+//                   const isCompleted = index <= currentStatusIndex;
+//                   const isActive = index === currentStatusIndex;
+
+//                   return (
+//                     <div key={step.key} className="relative">
+//                       <div className="flex items-center">
+//                         <div
+//                           className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 transition-colors ${
+//                             isCompleted
+//                               ? 'bg-green-100 text-green-600'
+//                               : 'bg-gray-100 text-gray-400'
+//                           }`}
+//                         >
+//                           <IconComponent className="h-5 w-5" />
+//                         </div>
+//                         <div className="flex-1">
+//                           <p
+//                             className={`font-medium ${
+//                               isCompleted ? 'text-gray-900' : 'text-gray-400'
+//                             }`}
+//                           >
+//                             {step.label}
+//                           </p>
+//                           <p className={`text-sm ${
+//                             isCompleted ? 'text-gray-600' : 'text-gray-400'
+//                           }`}>
+//                             {step.description}
+//                           </p>
+//                           {isActive && (
+//                             <p className="text-sm text-orange-600 font-medium mt-1">
+//                               Current status
+//                             </p>
+//                           )}
+//                         </div>
+//                       </div>
+
+//                       {/* Connector line */}
+//                       {index < statusSteps.length - 1 && (
+//                         <div
+//                           className={`w-px h-6 ml-5 transition-colors ${
+//                             isCompleted ? 'bg-green-200' : 'bg-gray-200'
+//                           }`}
+//                         ></div>
+//                       )}
+//                     </div>
+//                   );
+//                 })}
+//               </div>
+//             </div>
+
+//             {/* Order Items */}
+//             <div className="bg-white rounded-xl shadow-sm p-6">
+//               <h2 className="text-xl font-semibold mb-4">Order Items</h2>
+//               <div className="space-y-4">
+//                 {order.items.map((item, index) => (
+//                   <div
+//                     key={index}
+//                     className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0"
+//                   >
+//                     <div className="flex-1">
+//                       <h3 className="font-medium text-gray-900">{item.name}</h3>
+//                       <p className="text-sm text-gray-500">
+//                         ${item.price} each
+//                       </p>
+//                     </div>
+//                     <div className="text-center mx-4">
+//                       <p className="font-medium">×{item.quantity}</p>
+//                     </div>
+//                     <div className="text-right">
+//                       <p className="font-semibold">
+//                         ${(item.price * item.quantity).toFixed(2)}
+//                       </p>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Order Summary Sidebar */}
+//           <div className="lg:col-span-1">
+//             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+//               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+
+//               <div className="space-y-3">
+//                 {/* Calculate subtotal from items */}
+//                 <div className="flex justify-between">
+//                   <span className="text-gray-600">Subtotal</span>
+//                   <span>${order.items.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2)}</span>
+//                 </div>
+//                 <div className="flex justify-between font-semibold text-lg pt-2 border-t border-gray-200">
+//                   <span>Total</span>
+//                   <span>${order.totalAmount.toFixed(2)}</span>
+//                 </div>
+//               </div>
+
+//               <div className="mt-6 pt-6 border-t border-gray-200">
+//                 <div className="flex items-center justify-between mb-2">
+//                   <span className="text-gray-600">Payment Method</span>
+//                   <span className="capitalize font-medium">{order.paymentMethod}</span>
+//                 </div>
+//                 <div className="flex items-center justify-between">
+//                   <span className="text-gray-600">Payment Status</span>
+//                   <span
+//                     className={`px-2 py-1 rounded-full text-xs font-medium ${
+//                       order.paymentMethod === 'cash'
+//                         ? 'bg-yellow-100 text-yellow-800'
+//                         : 'bg-green-100 text-green-800'
+//                     }`}
+//                   >
+//                     {order.paymentMethod === 'cash' ? 'COD' : 'PAID'}
+//                   </span>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Customer Information */}
+//             <div className="bg-white rounded-xl shadow-sm p-6">
+//               <h2 className="text-xl font-semibold mb-4">Delivery Details</h2>
+
+//               <div className="space-y-3">
+//                 <div>
+//                   <span className="text-gray-600 text-sm block">Customer</span>
+//                   <p className="font-medium">
+//                     {order.customerInfo.firstName} {order.customerInfo.lastName}
+//                   </p>
+//                 </div>
+
+//                 <div>
+//                   <span className="text-gray-600 text-sm block">Phone</span>
+//                   <p className="font-medium">{order.customerInfo.phone}</p>
+//                 </div>
+
+//                 <div>
+//                   <span className="text-gray-600 text-sm block">Address</span>
+//                   <p className="font-medium">
+//                     {order.customerInfo.address}
+//                     {order.customerInfo.city && `, ${order.customerInfo.city}`}
+//                     {order.customerInfo.postalCode && `, ${order.customerInfo.postalCode}`}
+//                   </p>
+//                 </div>
+
+//                 {order.customerInfo.deliveryInstructions && (
+//                   <div>
+//                     <span className="text-gray-600 text-sm block">Instructions</span>
+//                     <p className="font-medium">{order.customerInfo.deliveryInstructions}</p>
+//                   </div>
+//                 )}
+
+//                 {order.customerInfo.notes && (
+//                   <div>
+//                     <span className="text-gray-600 text-sm block">Notes</span>
+//                     <p className="font-medium">{order.customerInfo.notes}</p>
+//                   </div>
+//                 )}
+//               </div>
+
+//               {/* Refresh Button */}
+//               <button
+//                 onClick={() => window.location.reload()}
+//                 className="w-full mt-6 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium transition-colors"
+//               >
+//                 Refresh Status
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// Updated OrderTrackingPage component - Replace your existing one
 const OrderTrackingPage = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/orders/${id}`);
+        console.log("Fetching order with ID:", id);
+        const response = await axios.get(`${API_BASE_URL}/orders/${id}`);
+
+        console.log("Order fetch response:", response.data);
+
         if (response.data.success) {
           setOrder(response.data.data);
         } else {
-          setError('Order not found');
+          setError("Order not found");
         }
       } catch (err) {
-        setError('Failed to fetch order details');
+        console.error("Order fetch error:", err);
+        setError("Failed to fetch order details");
       } finally {
         setLoading(false);
       }
@@ -2400,26 +3492,66 @@ const OrderTrackingPage = () => {
 
     if (id) {
       fetchOrder();
+
+      // Set up polling to refresh order status every 30 seconds
+      const interval = setInterval(fetchOrder, 30000);
+      return () => clearInterval(interval);
     }
   }, [id]);
 
-  // Status step configuration
+  // Status step configuration matching your simple status system
   const statusSteps = [
-    { key: 'pending', label: 'Order Placed', icon: Clock },
-    { key: 'confirmed', label: 'Confirmed', icon: CheckCircle },
-    { key: 'preparing', label: 'Preparing', icon: UtensilsCrossed },
-    { key: 'ready', label: 'Ready', icon: Package },
-    { key: 'out_for_delivery', label: 'Out for Delivery', icon: Truck },
-    { key: 'delivered', label: 'Delivered', icon: CheckCircle }
+    {
+      key: "pending",
+      label: "Order Placed",
+      icon: Clock,
+      description: "Your order has been received",
+    },
+    {
+      key: "confirmed",
+      label: "Confirmed",
+      icon: CheckCircle,
+      description: "Restaurant confirmed your order",
+    },
+    {
+      key: "preparing",
+      label: "Preparing",
+      icon: UtensilsCrossed,
+      description: "Your food is being prepared",
+    },
+    {
+      key: "ready",
+      label: "Ready",
+      icon: Package,
+      description: "Order is ready for pickup/delivery",
+    },
+    {
+      key: "out_for_delivery",
+      label: "Out for Delivery",
+      icon: Truck,
+      description: "Order is on the way",
+    },
+    {
+      key: "delivered",
+      label: "Delivered",
+      icon: CheckCircle,
+      description: "Order has been delivered",
+    },
   ];
 
   const getStatusIndex = (status) => {
-    return statusSteps.findIndex(step => step.key === status);
+    return statusSteps.findIndex((step) => step.key === status);
   };
 
-  const getStatusColor = (stepIndex, currentIndex) => {
-    if (stepIndex <= currentIndex) return 'text-green-600 bg-green-100';
-    return 'text-gray-400 bg-gray-100';
+  const getCurrentStep = () => {
+    if (!order) return 0;
+    const index = getStatusIndex(order.status);
+    return index >= 0 ? index : 0;
+  };
+
+  // Generate a readable order number from the ID
+  const getOrderNumber = (orderId) => {
+    return "ORD-" + orderId.slice(-8).toUpperCase();
   };
 
   if (loading) {
@@ -2438,89 +3570,143 @@ const OrderTrackingPage = () => {
       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Order Not Found</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            Order Not Found
+          </h2>
           <p className="text-gray-600 mb-6">{error}</p>
-          <button
-            onClick={() => window.history.back()}
-            className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
-          >
-            Go Back
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate("/")}
+              className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
+            >
+              Back to Home
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const currentStatusIndex = getStatusIndex(order.status);
+  const currentStatusIndex = getCurrentStep();
+  const currentStatus = statusSteps[currentStatusIndex];
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Track Your Order</h1>
-          <p className="text-gray-600">Order #{order.orderNumber}</p>
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center text-gray-600 hover:text-orange-600 transition-colors mb-4"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Home
+          </button>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Track Your Order
+          </h1>
+          <p className="text-gray-600">Order #{getOrderNumber(order._id)}</p>
+          <p className="text-sm text-gray-500">
+            Placed on {new Date(order.createdAt).toLocaleDateString()} at{" "}
+            {new Date(order.createdAt).toLocaleTimeString()}
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          
           {/* Order Progress */}
           <div className="lg:col-span-2">
+            {/* Current Status Card */}
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Current Status</h2>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    order.status === "delivered"
+                      ? "bg-green-100 text-green-800"
+                      : order.status === "out_for_delivery"
+                      ? "bg-blue-100 text-blue-800"
+                      : order.status === "preparing"
+                      ? "bg-orange-100 text-orange-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {currentStatus?.label ||
+                    order.status.replace("_", " ").toUpperCase()}
+                </span>
+              </div>
+
+              {currentStatus && (
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                    <currentStatus.icon className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-medium text-gray-900">
+                      {currentStatus.label}
+                    </p>
+                    <p className="text-gray-600">{currentStatus.description}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Progress Steps */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
               <h2 className="text-xl font-semibold mb-6">Order Progress</h2>
-              
-              <div className="space-y-4">
+
+              <div className="space-y-6">
                 {statusSteps.map((step, index) => {
                   const IconComponent = step.icon;
                   const isCompleted = index <= currentStatusIndex;
                   const isActive = index === currentStatusIndex;
-                  
+
                   return (
-                    <div key={step.key} className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
-                        isCompleted ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-                      }`}>
-                        <IconComponent className="h-5 w-5" />
+                    <div key={step.key} className="relative">
+                      <div className="flex items-center">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 transition-colors ${
+                            isCompleted
+                              ? "bg-green-100 text-green-600"
+                              : "bg-gray-100 text-gray-400"
+                          }`}
+                        >
+                          <IconComponent className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                          <p
+                            className={`font-medium ${
+                              isCompleted ? "text-gray-900" : "text-gray-400"
+                            }`}
+                          >
+                            {step.label}
+                          </p>
+                          <p
+                            className={`text-sm ${
+                              isCompleted ? "text-gray-600" : "text-gray-400"
+                            }`}
+                          >
+                            {step.description}
+                          </p>
+                          {isActive && (
+                            <p className="text-sm text-orange-600 font-medium mt-1">
+                              Current status
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className={`font-medium ${
-                          isCompleted ? 'text-gray-900' : 'text-gray-400'
-                        }`}>
-                          {step.label}
-                        </p>
-                        {isActive && (
-                          <p className="text-sm text-orange-600">Current status</p>
-                        )}
-                      </div>
+
+                      {/* Connector line */}
                       {index < statusSteps.length - 1 && (
-                        <div className={`w-px h-8 ml-5 ${
-                          isCompleted ? 'bg-green-200' : 'bg-gray-200'
-                        }`}></div>
+                        <div
+                          className={`w-px h-6 ml-5 transition-colors ${
+                            isCompleted ? "bg-green-200" : "bg-gray-200"
+                          }`}
+                        ></div>
                       )}
                     </div>
                   );
                 })}
               </div>
-
-              {/* Status History */}
-              {order.statusHistory && order.statusHistory.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <h3 className="text-lg font-semibold mb-4">Status History</h3>
-                  <div className="space-y-3">
-                    {order.statusHistory.slice().reverse().map((history, index) => (
-                      <div key={index} className="flex justify-between items-center text-sm">
-                        <span className="capitalize font-medium">
-                          {history.status.replace('_', ' ')}
-                        </span>
-                        <span className="text-gray-500">
-                          {new Date(history.timestamp).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Order Items */}
@@ -2528,16 +3714,23 @@ const OrderTrackingPage = () => {
               <h2 className="text-xl font-semibold mb-4">Order Items</h2>
               <div className="space-y-4">
                 {order.items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0"
+                  >
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">{item.name}</h3>
-                      <p className="text-sm text-gray-500">₦{item.price} each</p>
+                      <p className="text-sm text-gray-500">
+                        ${item.price} each
+                      </p>
                     </div>
-                    <div className="text-center">
-                      <p className="font-medium">x{item.quantity}</p>
+                    <div className="text-center mx-4">
+                      <p className="font-medium">×{item.quantity}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">₦{(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-semibold">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -2549,85 +3742,112 @@ const OrderTrackingPage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-              
+
               <div className="space-y-3">
+                {/* Calculate subtotal from items */}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span>₦{order.pricing.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Delivery Fee</span>
-                  <span>₦{order.pricing.deliveryFee.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span>₦{order.pricing.tax.toFixed(2)}</span>
+                  <span>
+                    $
+                    {order.items
+                      .reduce(
+                        (total, item) => total + item.price * item.quantity,
+                        0
+                      )
+                      .toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg pt-2 border-t border-gray-200">
                   <span>Total</span>
-                  <span>₦{order.pricing.total.toFixed(2)}</span>
+                  <span>${order.totalAmount.toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-600">Payment Status</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    order.paymentStatus === 'paid' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {order.paymentStatus.toUpperCase()}
+                  <span className="text-gray-600">Payment Method</span>
+                  <span className="capitalize font-medium">
+                    {order.paymentMethod}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Payment Method</span>
-                  <span className="capitalize">{order.paymentMethod}</span>
+                  <span className="text-gray-600">Payment Status</span>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      order.paymentStatus === "paid"
+                        ? "bg-green-100 text-green-800"
+                        : order.paymentStatus === "failed"
+                        ? "bg-red-100 text-red-800"
+                        : order.paymentMethod === "cash"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {order.paymentStatus === "paid"
+                      ? "PAID"
+                      : order.paymentStatus === "failed"
+                      ? "FAILED"
+                      : order.paymentMethod === "cash"
+                      ? "COD"
+                      : "PENDING"}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Delivery Information */}
+            {/* Customer Information */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold mb-4">Delivery Details</h2>
-              
+
               <div className="space-y-3">
                 <div>
-                  <span className="text-gray-600 text-sm">Customer</span>
+                  <span className="text-gray-600 text-sm block">Customer</span>
                   <p className="font-medium">
-                    {order.customer.firstName} {order.customer.lastName}
-                  </p>
-                </div>
-                
-                <div>
-                  <span className="text-gray-600 text-sm">Phone</span>
-                  <p className="font-medium">{order.customer.phone}</p>
-                </div>
-                
-                <div>
-                  <span className="text-gray-600 text-sm">Address</span>
-                  <p className="font-medium">
-                    {order.delivery.address}, {order.delivery.city}
-                    {order.delivery.postalCode && `, ${order.delivery.postalCode}`}
+                    {order.customerInfo.firstName} {order.customerInfo.lastName}
                   </p>
                 </div>
 
-                {order.delivery.instructions && (
-                  <div>
-                    <span className="text-gray-600 text-sm">Instructions</span>
-                    <p className="font-medium">{order.delivery.instructions}</p>
-                  </div>
-                )}
+                <div>
+                  <span className="text-gray-600 text-sm block">Phone</span>
+                  <p className="font-medium">{order.customerInfo.phone}</p>
+                </div>
 
-                {order.estimatedDeliveryTime && (
+                <div>
+                  <span className="text-gray-600 text-sm block">Address</span>
+                  <p className="font-medium">
+                    {order.customerInfo.address}
+                    {order.customerInfo.city && `, ${order.customerInfo.city}`}
+                    {order.customerInfo.postalCode &&
+                      `, ${order.customerInfo.postalCode}`}
+                  </p>
+                </div>
+
+                {order.customerInfo.deliveryInstructions && (
                   <div>
-                    <span className="text-gray-600 text-sm">Estimated Delivery</span>
+                    <span className="text-gray-600 text-sm block">
+                      Instructions
+                    </span>
                     <p className="font-medium">
-                      {new Date(order.estimatedDeliveryTime).toLocaleString()}
+                      {order.customerInfo.deliveryInstructions}
                     </p>
                   </div>
                 )}
+
+                {order.customerInfo.notes && (
+                  <div>
+                    <span className="text-gray-600 text-sm block">Notes</span>
+                    <p className="font-medium">{order.customerInfo.notes}</p>
+                  </div>
+                )}
               </div>
+
+              {/* Refresh Button */}
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full mt-6 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium transition-colors"
+              >
+                Refresh Status
+              </button>
             </div>
           </div>
         </div>
@@ -2722,4 +3942,4 @@ const App = () => {
   );
 };
 
-export default App; 
+export default App;
