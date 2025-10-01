@@ -326,4 +326,43 @@ router.put('/profile', auth, [
   }
 });
 
+// @route   POST /api/auth/create-admin
+// @desc    Create an admin user (one-time use)
+// @access  Public (but you may want to remove/disable after first use)
+router.post('/create-admin', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // Check if admin already exists
+    const existingAdmin = await User.findOne({ email });
+    if (existingAdmin) {
+      return res.status(400).json({ success: false, message: 'Admin already exists' });
+    }
+
+    const user = new User({
+      name,
+      email,
+      password,
+      role: 'admin'
+    });
+
+    await user.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Admin created successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Admin creation error:', error);
+    res.status(500).json({ success: false, message: 'Server error creating admin' });
+  }
+});
+
+
 module.exports = router;

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import AdminLogin from '../components/auth/AdminLogin';
 
 const AuthContext = createContext();
 
@@ -44,8 +45,10 @@ const authReducer = (state, action) => {
 };
 
 const initialState = {
-  isAuthenticated: false,
-  user: null,
+  // isAuthenticated: false,
+  // user: null,
+  isAuthenticated: !!localStorage.getItem('token'),
+  user: JSON.parse(localStorage.getItem("user")) || null, // 👈 add this
   token: localStorage.getItem('token'),
   loading: false, // Change back to false
   error: null
@@ -138,7 +141,7 @@ const register = async (userData) => {
     // Check if response has token (indicating success) instead of success field
     if (response.data.token && response.data.user) {
       localStorage.setItem('token', response.data.token);
-      
+       localStorage.setItem("user", JSON.stringify(response.data.user)); // 👈 add this
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
@@ -208,6 +211,7 @@ const register = async (userData) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
+    localStorage.removeItem("user"); // 👈 clear user too
     delete axios.defaults.headers.common['Authorization'];
     dispatch({ type: 'LOGOUT' });
   }, []);
@@ -232,12 +236,29 @@ const register = async (userData) => {
     }
   };
 
+  // Add this function after the login function and before the logout function
+const adminLogin = (token, userData) => {
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(userData));
+  localStorage.setItem('isAdminAuthenticated', 'true');
+  
+  dispatch({
+    type: 'AUTH_SUCCESS',
+    payload: {
+      user: userData,
+      token: token
+    }
+  });
+};
+
   const value = {
     ...state,
     register,
     login,
     logout,
     updateProfile,
+    adminLogin,
+  
     clearError
   };
 

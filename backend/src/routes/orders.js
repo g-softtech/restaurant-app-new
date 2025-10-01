@@ -72,6 +72,26 @@ router.get('/:orderId', async (req, res) => {
   }
 });
 
+// Get all orders for admin
+router.get('/', async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .sort({ createdAt: -1 }) // Most recent first
+      .limit(50); // Limit for performance
+    
+    res.json({
+      success: true,
+      orders: orders
+    });
+  } catch (error) {
+    console.error('Failed to fetch orders:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch orders'
+    });
+  }
+});
+
 // Add to routes/orders.js
 router.patch('/:id/status', async (req, res) => {
   try {
