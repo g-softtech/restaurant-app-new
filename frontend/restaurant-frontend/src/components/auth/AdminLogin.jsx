@@ -1,233 +1,106 @@
-// components/auth/AdminLogin.js
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { ArrowLeft, Loader, AlertCircle, User, Lock } from "lucide-react";
-import axios from "axios";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Loader, AlertCircle, User, Lock } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
-
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 const AdminLogin = () => {
   const [credentials, setCredentials] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: ''
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const { user, isAuthenticated } = useAuth();
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth(); // Add this line at the top with other hooks
-  const { adminLogin } = useAuth(); // Add this line at the top with other hooks
-
-  // // Redirect if already authenticated as admin
-  // useEffect(() => {
-  //   if (isAuthenticated && user?.role === "admin") {
-  //     navigate("/admin/dashboard");
-  //   }
-  // }, [isAuthenticated, user, navigate]);
+  const { login } = useAuth(); // Use the login from AuthContext
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCredentials((prev) => ({
+    setCredentials(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
-    // Clear error when user starts typing
-    if (error) setError("");
+    if (error) setError('');
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!credentials.email || !credentials.password) {
-  //     setError("Please fill in all fields");
-  //     return;
-  //   }
-
-  //   setLoading(true);
-  //   setError("");
-
-  //   try {
-  //     // Attempt to login with admin credentials
-  //     const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-  //       email: credentials.email,
-  //       password: credentials.password,
-  //       //  adminLogin: true // Flag to indicate admin login attempt
-  //     });
-
-  //     //   if (response.data.success && response.data.user.role === 'admin') {
-  //     //     // Store admin token
-  //     //     localStorage.setItem('token', response.data.token);
-  //     //     localStorage.setItem('isAdminAuthenticated', 'true');
-
-  //     //     // Navigate to admin dashboard
-  //     //     navigate('/admin/dashboard');
-  //     //   } else {
-  //     //     setError('Invalid admin credentials or insufficient permissions');
-  //     //   }
-  //     // Check if login was successful and user is admin
-  //     //   if (
-  //     //     response.data.token &&
-  //     //     response.data.user &&
-  //     //     response.data.user.role === "admin"
-  //     //   ) {
-  //     //     localStorage.setItem("token", response.data.token);
-  //     //     localStorage.setItem("isAdminAuthenticated", "true");
-  //     //     navigate("/admin/dashboard");
-  //     //   } else if (response.data.user && response.data.user.role !== "admin") {
-  //     //     setError("Access denied. Admin privileges required.");
-  //     //   } else {
-  //     //     setError("Invalid admin credentials or insufficient permissions");
-  //     //   }
-
-  //     // Then in handleSubmit, replace the success section:
-  //     // if (response.data.success && response.data.user.role === 'admin') {
-  //     //   // Update AuthContext
-  //     //   login(response.data.token, response.data.user); // This updates the context
-
-  //     //   // Also set localStorage for persistence
-  //     //   localStorage.setItem('token', response.data.token);
-  //     //   localStorage.setItem('isAdminAuthenticated', 'true');
-
-  //     //   // Navigate to admin dashboard
-  //     //   navigate('/admin/dashboard');
-
-  //     // } else if (response.data.user && response.data.user.role !== "admin") {
-  //     //         setError("Access denied. Admin privileges required.");
-  //     //       } else {
-  //     //         setError("Invalid admin credentials or insufficient permissions");
-  //     //       }
-
-  //     if (response.data.success && response.data.user.role === "admin") {
-  //       // Use the adminLogin method from AuthContext
-  //       adminLogin(response.data.token, response.data.user);
-
-  //       // Navigate to admin dashboard
-  //       navigate("/admin/dashboard", { replace: true });
-  //     } else {
-  //       setError("Invalid admin credentials or insufficient permissions");
-  //     }
-  //   } catch (err) {
-  //     console.error("Admin login error:", err);
-  //     if (err.response?.status === 401) {
-  //       setError("Invalid admin credentials");
-  //     } else if (err.response?.status === 403) {
-  //       setError("Access denied. Admin privileges required.");
-  //     } else {
-  //       setError("Login failed. Please try again.");
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Demo admin credentials for development
-  
-//   const handleSubmit = async (e) => {
-//   e.preventDefault();
-  
-//   if (!credentials.email || !credentials.password) {
-//     setError('Please fill in all fields');
-//     return;
-//   }
-
-//   setLoading(true);
-//   setError('');
-
-//   try {
-//     const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-//       email: credentials.email,
-//       password: credentials.password,
-//     });
-
-//     console.log('1. Login response:', response.data);
-
-//     if (response.data.success && response.data.user.role === 'admin') {
-//       console.log('2. Admin verified, calling adminLogin');
-      
-//       await adminLogin(response.data.token, response.data.user);
-      
-//       console.log('3. After adminLogin - localStorage check:');
-//       console.log('   Token:', localStorage.getItem('token'));
-//       console.log('   User:', localStorage.getItem('user'));
-//       console.log('   IsAuthenticated:', isAuthenticated);
-//       console.log('   User from state:', user);
-      
-//       console.log('4. About to navigate to /admin/dashboard');
-//       navigate('/admin/dashboard', { replace: true });
-//       console.log('5. Navigate called');
-      
-//     } else {
-//       setError('Invalid admin credentials or insufficient permissions');
-//     }
-//   } catch (err) {
-//     console.error('Admin login error:', err);
-//     setError('Login failed. Please try again.');
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!credentials.email || !credentials.password) {
-    setError('Please fill in all fields');
-    return;
-  }
-
-  setLoading(true);
-  setError('');
-
-  try {
-    const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-      email: credentials.email,
-      password: credentials.password,
-    });
-
-    if (response.data.success && response.data.user.role === 'admin') {
-      // Store everything in localStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      localStorage.setItem('isAdminAuthenticated', 'true');
-      
-      // Force full page reload to admin dashboard
-      window.location.href = '/admin/dashboard';
-    } else {
-      setError('Invalid admin credentials or insufficient permissions');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!credentials.email || !credentials.password) {
+      setError('Please fill in all fields');
+      return;
     }
-  } catch (err) {
-    console.error('Admin login error:', err);
-    setError('Login failed. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
-  
+
+    setLoading(true);
+    setError('');
+
+    try {
+      console.log('Attempting admin login...');
+      
+      // Use the AuthContext login method
+      const result = await login({
+        email: credentials.email,
+        password: credentials.password,
+      });
+
+      console.log('Login result:', result);
+
+      if (result.success) {
+        // Check if the logged in user is an admin
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
+        console.log('User after login:', user);
+        
+        if (user && user.role === 'admin') {
+          localStorage.setItem('isAdminAuthenticated', 'true');
+          
+          console.log('Admin verified, navigating to dashboard...');
+          console.log('LocalStorage - token:', !!localStorage.getItem('token'));
+          console.log('LocalStorage - user:', localStorage.getItem('user'));
+          
+          // Small delay to ensure state updates
+          setTimeout(() => {
+            navigate('/admin/dashboard', { replace: true });
+          }, 100);
+        } else {
+          setError('Access denied. Admin privileges required.');
+          console.log('User is not admin, role:', user?.role);
+          // Logout the non-admin user
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      } else {
+        setError(result.message || 'Invalid admin credentials');
+      }
+    } catch (err) {
+      console.error('Admin login error:', err);
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fillDemoCredentials = () => {
     setCredentials({
-      email: "admin@bellavista.com",
-      password: "admin123",
+      email: 'admin@bellavista.com',
+      password: 'admin123'
     });
   };
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
       <div className="max-w-md mx-auto px-4 py-12">
-        {/* Back Button */}
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate('/')}
           className="flex items-center text-gray-600 hover:text-orange-600 transition-colors mb-8"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back to Restaurant
         </button>
 
-        {/* Login Card */}
         <div className="bg-white rounded-xl shadow-lg p-8">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="h-8 w-8 text-white" />
@@ -238,7 +111,6 @@ const handleSubmit = async (e) => {
             </p>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
               <AlertCircle className="h-5 w-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
@@ -249,7 +121,6 @@ const handleSubmit = async (e) => {
             </div>
           )}
 
-          {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -300,22 +171,17 @@ const handleSubmit = async (e) => {
                   Signing in...
                 </div>
               ) : (
-                "Sign In to Dashboard"
+                'Sign In to Dashboard'
               )}
             </button>
           </form>
 
-          {/* Demo Credentials for Development */}
-          {process.env.NODE_ENV === "development" && (
+          {process.env.NODE_ENV === 'development' && (
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm font-medium text-blue-800">
-                    Demo Credentials
-                  </p>
-                  <p className="text-xs text-blue-600 mt-1">
-                    For development only
-                  </p>
+                  <p className="text-sm font-medium text-blue-800">Demo Credentials</p>
+                  <p className="text-xs text-blue-600 mt-1">For development only</p>
                 </div>
                 <button
                   type="button"
@@ -332,15 +198,13 @@ const handleSubmit = async (e) => {
             </div>
           )}
 
-          {/* Security Notice */}
           <div className="mt-6 p-3 bg-gray-50 rounded-lg">
             <div className="flex items-start text-sm text-gray-600">
               <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium">Security Notice</p>
                 <p className="text-xs mt-1">
-                  Admin access is restricted and monitored. Only authorized
-                  personnel should use this login.
+                  Admin access is restricted and monitored. Only authorized personnel should use this login.
                 </p>
               </div>
             </div>

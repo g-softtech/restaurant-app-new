@@ -1,8 +1,5 @@
-
-
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import AdminLogin from '../components/auth/AdminLogin';
 
 const AuthContext = createContext();
 
@@ -45,12 +42,10 @@ const authReducer = (state, action) => {
 };
 
 const initialState = {
-  // isAuthenticated: false,
-  // user: null,
   isAuthenticated: !!localStorage.getItem('token'),
-  user: JSON.parse(localStorage.getItem("user")) || null, // 👈 add this
+  user: JSON.parse(localStorage.getItem("user")) || null,
   token: localStorage.getItem('token'),
-  loading: false, // Change back to false
+  loading: false,
   error: null
 };
 
@@ -59,9 +54,7 @@ export const AuthProvider = ({ children }) => {
 
   const loadUser = useCallback(async () => {
     const token = localStorage.getItem('token');
-    if (!token) {
-      return;
-    }
+    if (!token) return;
 
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -74,9 +67,13 @@ export const AuthProvider = ({ children }) => {
           token: token
         }
       });
+      
+      localStorage.setItem('user', JSON.stringify(response.data.user));
     } catch (error) {
       console.error('Load user error:', error);
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('isAdminAuthenticated');
       delete axios.defaults.headers.common['Authorization'];
       dispatch({ type: 'LOGOUT' });
     }
@@ -94,124 +91,82 @@ export const AuthProvider = ({ children }) => {
     }
   }, [state.token]);
 
-  // Fix register function
-  // const register = async (userData) => {
-  //   dispatch({ type: 'AUTH_START' });
+  const register = async (userData) => {
+    dispatch({ type: 'AUTH_START' });
     
-  //   try {
-  //     const response = await axios.post('http://localhost:5000/api/auth/register', userData);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/register', userData);
       
-  //     if (response.data.success) {
-  //       localStorage.setItem('token', response.data.token);
+      if (response.data.token && response.data.user) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
         
-  //       dispatch({
-  //         type: 'AUTH_SUCCESS',
-  //         payload: {
-  //           user: response.data.user,
-  //           token: response.data.token
-  //         }
-  //       });
+        dispatch({
+          type: 'AUTH_SUCCESS',
+          payload: {
+            user: response.data.user,
+            token: response.data.token
+          }
+        });
         
-  //       return { success: true, message: response.data.message };
-  //     } else {
-  //       dispatch({
-  //         type: 'AUTH_ERROR',
-  //         payload: response.data.message
-  //       });
-  //       return { success: false, message: response.data.message };
-  //     }
-  //   } catch (error) {
-  //     const errorMsg = error.response?.data?.message || 'Registration failed';
-  //     dispatch({
-  //       type: 'AUTH_ERROR',
-  //       payload: errorMsg
-  //     });
-  //     return { success: false, message: errorMsg };
-  //   }
-  // };
-
-// Similarly update register function:
-const register = async (userData) => {
-  dispatch({ type: 'AUTH_START' });
-  
-  try {
-    const response = await axios.post('http://localhost:5000/api/auth/register', userData);
-    console.log('Backend response:', response.data); // Add this to see actual response
-    
-    // Check if response has token (indicating success) instead of success field
-    if (response.data.token && response.data.user) {
-      localStorage.setItem('token', response.data.token);
-       localStorage.setItem("user", JSON.stringify(response.data.user)); // 👈 add this
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: {
-          user: response.data.user,
-          token: response.data.token
-        }
-      });
-      
-      return { success: true, message: response.data.message || 'Registration successful' };
-    } else {
+        return { success: true, message: response.data.message || 'Registration successful' };
+      } else {
+        dispatch({
+          type: 'AUTH_ERROR',
+          payload: response.data.message || 'Registration failed'
+        });
+        return { success: false, message: response.data.message || 'Registration failed' };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Registration failed';
       dispatch({
         type: 'AUTH_ERROR',
-        payload: response.data.message || 'Registration failed'
+        payload: errorMsg
       });
-      return { success: false, message: response.data.message || 'Registration failed' };
+      return { success: false, message: errorMsg };
     }
-  } catch (error) {
-    const errorMsg = error.response?.data?.message || 'Registration failed';
-    dispatch({
-      type: 'AUTH_ERROR',
-      payload: errorMsg
-    });
-    return { success: false, message: errorMsg };
-  }
-};
+  };
 
-  
-  // Fix login function
   const login = async (credentials) => {
-  dispatch({ type: 'AUTH_START' });
-  
-  try {
-    const response = await axios.post('http://localhost:5000/api/auth/login', credentials);
-    console.log('Backend response:', response.data); // Add this to see actual response
+    dispatch({ type: 'AUTH_START' });
     
-    // Check if response has token (indicating success) instead of success field
-    if (response.data.token && response.data.user) {
-      localStorage.setItem('token', response.data.token);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/login', credentials);
       
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: {
-          user: response.data.user,
-          token: response.data.token
-        }
-      });
-      
-      return { success: true, message: response.data.message || 'Login successful' };
-    } else {
-      // Handle case where login fails but doesn't throw error
+      if (response.data.token && response.data.user) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        
+        dispatch({
+          type: 'AUTH_SUCCESS',
+          payload: {
+            user: response.data.user,
+            token: response.data.token
+          }
+        });
+        
+        return { success: true, message: response.data.message || 'Login successful' };
+      } else {
+        dispatch({
+          type: 'AUTH_ERROR',
+          payload: response.data.message || 'Login failed'
+        });
+        return { success: false, message: response.data.message || 'Login failed' };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Login failed';
       dispatch({
         type: 'AUTH_ERROR',
-        payload: response.data.message || 'Login failed'
+        payload: errorMsg
       });
-      return { success: false, message: response.data.message || 'Login failed' };
+      return { success: false, message: errorMsg };
     }
-  } catch (error) {
-    const errorMsg = error.response?.data?.message || 'Login failed';
-    dispatch({
-      type: 'AUTH_ERROR',
-      payload: errorMsg
-    });
-    return { success: false, message: errorMsg };
-  }
-};
-
+  };
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
-    localStorage.removeItem("user"); // 👈 clear user too
+    localStorage.removeItem("user");
+    localStorage.removeItem('isAdminAuthenticated');
     delete axios.defaults.headers.common['Authorization'];
     dispatch({ type: 'LOGOUT' });
   }, []);
@@ -223,10 +178,14 @@ const register = async (userData) => {
   const updateProfile = async (userData) => {
     try {
       const response = await axios.put('http://localhost:5000/api/auth/profile', userData);
+      
+      const updatedUser = response.data.user;
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
-          user: response.data.user,
+          user: updatedUser,
           token: state.token
         }
       });
@@ -236,29 +195,12 @@ const register = async (userData) => {
     }
   };
 
-  // Add this function after the login function and before the logout function
-const adminLogin = (token, userData) => {
-  localStorage.setItem('token', token);
-  localStorage.setItem('user', JSON.stringify(userData));
-  localStorage.setItem('isAdminAuthenticated', 'true');
-  
-  dispatch({
-    type: 'AUTH_SUCCESS',
-    payload: {
-      user: userData,
-      token: token
-    }
-  });
-};
-
   const value = {
     ...state,
     register,
     login,
     logout,
     updateProfile,
-    adminLogin,
-  
     clearError
   };
 
@@ -276,15 +218,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-
-
-
-
-
-
-
-
-
-
-
