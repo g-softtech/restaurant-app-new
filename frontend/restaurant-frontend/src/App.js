@@ -39,6 +39,9 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminLogin from "./components/auth/AdminLogin";
 import AdminDashboard from "./components/admin/AdminDashboard";
 
+import OrderTracking from "./components/orders/OrderTracking";
+import OrderHistory from "./components/orders/OrderHistory";
+
 import {
   RestaurantProvider,
   useRestaurant,
@@ -308,10 +311,10 @@ const Navigation = () => {
   const navigate = useNavigate();
 
   // Check if current user is admin
-  const isAdmin = user?.role === 'admin';
-  
+  const isAdmin = user?.role === "admin";
+
   // Hide navigation on admin pages
-  if (location.pathname.startsWith('/admin')) {
+  if (location.pathname.startsWith("/admin")) {
     return null; // Don't render navigation on admin pages
   }
 
@@ -388,7 +391,7 @@ const Navigation = () => {
           {/* Cart and Authentication Section */}
           <div className="flex items-center space-x-4">
             {/* Only show cart for non-admin users or when not on admin pages */}
-            {(!isAdmin || !location.pathname.startsWith('/admin')) && (
+            {(!isAdmin || !location.pathname.startsWith("/admin")) && (
               <Link
                 to="/cart"
                 className="relative p-2 text-gray-700 hover:text-orange-600 transition-all duration-200 hover:scale-105"
@@ -419,7 +422,11 @@ const Navigation = () => {
                   <User className="h-6 w-6" />
                   <span className="hidden md:block font-medium">
                     {user?.name}
-                    {isAdmin && <span className="text-xs text-orange-600 ml-1">(Admin)</span>}
+                    {isAdmin && (
+                      <span className="text-xs text-orange-600 ml-1">
+                        (Admin)
+                      </span>
+                    )}
                   </span>
                   <svg
                     className="w-4 h-4"
@@ -448,7 +455,7 @@ const Navigation = () => {
                         My Profile
                       </Link>
                     )}
-                    
+
                     {/* Admin-specific options */}
                     {isAdmin && (
                       <>
@@ -467,7 +474,7 @@ const Navigation = () => {
                         <div className="border-t border-gray-100 my-1"></div>
                       </>
                     )}
-                    
+
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-red-500"
@@ -568,7 +575,7 @@ const Navigation = () => {
                         </Link>
                       </>
                     )}
-                    
+
                     <button
                       onClick={() => {
                         handleLogout();
@@ -595,7 +602,7 @@ const Navigation = () => {
                     >
                       <span>Sign Up</span>
                     </Link>
-                    
+
                     {/* Admin access for non-authenticated users on mobile */}
                     <div className="border-t border-gray-200 pt-2 mt-2">
                       <Link
@@ -2621,28 +2628,27 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            {/* <Route path="/admin/*" element={<AdminDashboard />} /> */}
-            {/* <Route
-              path="/admin/*"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            /> */}
-            <Route path="*" element={<NotFoundPage />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              // Add these routes
+              <Route path="/track-order/:orderId" element={<OrderTracking />} />
+              <Route
+                path="/my-orders"
+                element={
+                  <ProtectedRoute>
+                    <OrderHistory />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
-
 
             {/* Custom CSS for animations */}
             <style jsx>{`

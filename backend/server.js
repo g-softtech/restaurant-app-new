@@ -57,6 +57,37 @@ const connectDB = async () => {
 // Connect to Database
 connectDB();
 
+// server.js - Add this route
+app.get('/api/admin/stats', require('./src/middleware/auth').adminAuth, async (req, res) => {
+  try {
+    const Order = require('./src/models/Order');
+    const MenuItem = require('./src/models/MenuItem');
+    
+    const totalOrders = await Order.countDocuments();
+    const pendingOrders = await Order.countDocuments({ status: 'pending' });
+    const activeMenuItems = await MenuItem.countDocuments({ availability: true });
+    
+    const revenueResult = await Order.aggregate([
+      { $match: { paymentStatus: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ]);
+    
+    const totalRevenue = revenueResult[0]?.total || 0;
+    
+    res.json({
+      success: true,
+      stats: {
+        totalOrders,
+        pendingOrders,
+        activeMenuItems,
+        totalRevenue
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Add this to your server.js
 app.get('/api/health', (req, res) => {
   res.json({ 
