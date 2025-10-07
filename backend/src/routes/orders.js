@@ -1,7 +1,13 @@
-// routes/orders.js - Enhanced with Socket.IO real-time updates
+// routes/orders.js - Enhanced with Email Notifications
 const express = require('express');
 const Order = require('../models/Order');
 const { auth, adminAuth } = require('../middleware/auth');
+const { 
+  sendOrderConfirmation, 
+  sendOrderStatusUpdate, 
+  sendAdminOrderAlert 
+} = require('../services/emailService');
+
 const router = express.Router();
 
 // @route   POST /api/orders
@@ -39,7 +45,17 @@ router.post('/', async (req, res) => {
     
     console.log('Order saved to database:', order._id);
     
-    // Emit real-time notification to admins about new order
+    // Send emails asynchronously (don't wait for them)
+    Promise.all([
+      sendOrderConfirmation(order),
+      sendAdminOrderAlert(order)
+    ]).then(results => {
+      console.log('Emails sent:', results);
+    }).catch(error => {
+      console.error('Email sending failed:', error);
+    });
+    
+    // Emit real-time notification to admins
     if (global.emitNewOrder) {
       global.emitNewOrder({
         _id: order._id,
@@ -181,6 +197,8 @@ router.patch('/:id/status', adminAuth, async (req, res) => {
       });
     }
 
+    const oldStatus = order.status;
+
     // Validate status transition
     const validTransitions = {
       'pending': ['confirmed', 'cancelled'],
@@ -201,6 +219,11 @@ router.patch('/:id/status', adminAuth, async (req, res) => {
 
     // Update status using the model method
     await order.updateStatus(status, req.user._id, note);
+
+    // Send status update email asynchronously
+    sendOrderStatusUpdate(order, oldStatus, status).catch(error => {
+      console.error('Failed to send status update email:', error);
+    });
 
     // Emit real-time update to order trackers and admins
     if (global.emitOrderUpdate) {
@@ -259,7 +282,13 @@ router.patch('/:id/cancel', auth, async (req, res) => {
       });
     }
 
+    const oldStatus = order.status;
     await order.updateStatus('cancelled', req.user._id, reason || 'Cancelled by user');
+
+    // Send cancellation email
+    sendOrderStatusUpdate(order, oldStatus, 'cancelled').catch(error => {
+      console.error('Failed to send cancellation email:', error);
+    });
 
     // Emit real-time update
     if (global.emitOrderUpdate) {
