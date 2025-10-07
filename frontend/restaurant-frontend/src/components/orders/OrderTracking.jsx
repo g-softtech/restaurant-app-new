@@ -1,4 +1,4 @@
-// components/orders/OrderTracking.jsx
+// components/orders/OrderTracking.jsx - Enhanced with Socket.IO
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -13,8 +13,11 @@ import {
   AlertCircle,
   Loader,
   ArrowLeft,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
+import { useSocket } from '../../contexts/SocketContext';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
@@ -24,19 +27,53 @@ const OrderTracking = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Socket.IO integration
+  const { connected, orderUpdate, trackOrder, stopTrackingOrder } = useSocket();
 
+  // Fetch order details initially
   useEffect(() => {
     fetchOrderDetails();
-    // Poll for updates every 30 seconds
-    const interval = setInterval(fetchOrderDetails, 30000);
-    return () => clearInterval(interval);
   }, [orderId]);
+
+  // Start tracking this order via Socket.IO
+  useEffect(() => {
+    if (orderId && connected) {
+      trackOrder(orderId);
+      console.log('Started tracking order:', orderId);
+    }
+
+    return () => {
+      if (orderId) {
+        stopTrackingOrder(orderId);
+        console.log('Stopped tracking order:', orderId);
+      }
+    };
+  }, [orderId, connected, trackOrder, stopTrackingOrder]);
+
+  // Listen for real-time order updates
+  useEffect(() => {
+    if (orderUpdate && orderUpdate._id === orderId) {
+      console.log('Real-time order update received:', orderUpdate);
+      
+      // Update order state with new data
+      setOrder(prevOrder => ({
+        ...prevOrder,
+        status: orderUpdate.status,
+        statusHistory: orderUpdate.statusHistory,
+        estimatedDeliveryTime: orderUpdate.estimatedDeliveryTime
+      }));
+
+      // Show notification
+      showUpdateNotification(orderUpdate.status);
+    }
+  }, [orderUpdate, orderId]);
 
   const fetchOrderDetails = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
       if (response.data.success) {
@@ -47,6 +84,34 @@ const OrderTracking = () => {
       setError('Failed to load order details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const showUpdateNotification = (status) => {
+    const messages = {
+      confirmed: '✅ Your order has been confirmed!',
+      preparing: '👨‍🍳 Your food is being prepared',
+      ready: '📦 Your order is ready!',
+      out_for_delivery: '🚚 Your order is on the way!',
+      delivered: '🎉 Your order has been delivered!'
+    };
+
+    const message = messages[status] || 'Order status updated';
+    
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.remove(), 4000);
+
+    // Browser notification
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Order Update', {
+        body: message,
+        icon: '/logo192.png'
+      });
     }
   };
 
@@ -139,14 +204,33 @@ const OrderTracking = () => {
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Header */}
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center text-gray-600 hover:text-orange-600 mb-6"
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          Back to Home
-        </button>
+        {/* Header with Connection Status */}
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center text-gray-600 hover:text-orange-600"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Home
+          </button>
+          
+          {/* Real-time Connection Indicator */}
+          <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
+            connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+          }`}>
+            {connected ? (
+              <>
+                <Wifi className="h-4 w-4" />
+                <span>Live Updates</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-4 w-4" />
+                <span>Connecting...</span>
+              </>
+            )}
+          </div>
+        </div>
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Track Your Order</h1>
@@ -209,7 +293,7 @@ const OrderTracking = () => {
                   return (
                     <div key={step.key} className="relative">
                       <div className="flex items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 transition-all ${
                           isCompleted ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
                         }`}>
                           <IconComponent className="h-5 w-5" />
@@ -222,7 +306,9 @@ const OrderTracking = () => {
                             {step.description}
                           </p>
                           {isActive && (
-                            <p className="text-sm text-orange-600 font-medium mt-1">Current status</p>
+                            <p className="text-sm text-orange-600 font-medium mt-1 flex items-center gap-1">
+                              <span className="animate-pulse">●</span> Current status
+                            </p>
                           )}
                         </div>
                       </div>
@@ -354,7 +440,7 @@ const OrderTracking = () => {
                 onClick={fetchOrderDetails}
                 className="w-full mt-6 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg font-medium transition-colors"
               >
-                Refresh Status
+                Manual Refresh
               </button>
             </div>
           </div>

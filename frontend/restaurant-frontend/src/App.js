@@ -2,6 +2,7 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { Package, Truck } from "lucide-react";
+import { SocketProvider } from './contexts/SocketContext';
 
 import {
   BrowserRouter as Router,
@@ -68,240 +69,6 @@ const DELIVERY_TIMES = [
 const API_BASE_URL =
   process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
-// Navigation Component
-// Update your Navigation component in App.js
-// const Navigation = () => {
-//   const [isMenuOpen, setIsMenuOpen] = useState(false);
-//   const { getTotalItems, loading, error } = useRestaurant();
-//   const { user, isAuthenticated, logout } = useAuth(); // ADD THIS LINE
-//   const location = useLocation();
-//   const navigate = useNavigate(); // ADD THIS LINE
-
-//   const navItems = [
-//     { path: "/", label: "Home", icon: Home },
-//     { path: "/menu", label: "Menu", icon: UtensilsCrossed },
-//     { path: "/about", label: "About", icon: Info },
-//     { path: "/contact", label: "Contact", icon: MessageCircle },
-//   ];
-
-//   const isActive = (path) => {
-//     return location.pathname === path;
-//   };
-
-//   // ADD THIS FUNCTION
-//   const handleLogout = () => {
-//     logout();
-//     navigate("/");
-//   };
-
-//   return (
-//     <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50 shadow-sm">
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-//         <div className="flex justify-between items-center h-16">
-//           <div className="flex items-center">
-//             <Link
-//               to="/"
-//               className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent"
-//             >
-//               Bella Vista
-//             </Link>
-//             {loading && (
-//               <div className="ml-3 flex items-center text-orange-600">
-//                 <Loader className="h-4 w-4 animate-spin mr-1" />
-//                 <span className="text-sm">Loading...</span>
-//               </div>
-//             )}
-//             {error && (
-//               <div className="ml-3 flex items-center text-amber-600">
-//                 <AlertCircle className="h-4 w-4 mr-1" />
-//                 <span className="text-sm">Using sample menu</span>
-//               </div>
-//             )}
-//           </div>
-
-//           {/* Desktop Navigation */}
-//           <div className="hidden md:block">
-//             <div className="flex items-center space-x-8">
-//               {navItems.map((item) => {
-//                 const IconComponent = item.icon;
-//                 return (
-//                   <Link
-//                     key={item.path}
-//                     to={item.path}
-//                     className={`flex items-center space-x-1 px-3 py-2 text-sm font-medium transition-all duration-200 relative ${
-//                       isActive(item.path)
-//                         ? "text-orange-600"
-//                         : "text-gray-700 hover:text-orange-600"
-//                     }`}
-//                   >
-//                     <IconComponent className="h-4 w-4" />
-//                     <span>{item.label}</span>
-//                     {isActive(item.path) && (
-//                       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 rounded-full"></div>
-//                     )}
-//                   </Link>
-//                 );
-//               })}
-//             </div>
-//           </div>
-
-//           {/* Cart and Authentication Section */}
-//           <div className="flex items-center space-x-4">
-//             <Link
-//               to="/cart"
-//               className="relative p-2 text-gray-700 hover:text-orange-600 transition-all duration-200 hover:scale-105"
-//             >
-//               <ShoppingCart className="h-6 w-6" />
-//               {getTotalItems() > 0 && (
-//                 <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-600 to-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-//                   {getTotalItems()}
-//                 </span>
-//               )}
-//             </Link>
-
-//             {/* REPLACE YOUR EXISTING AUTHENTICATION SECTION WITH THIS */}
-//             {isAuthenticated ? (
-//               <div className="relative group">
-//                 <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors">
-//                   <User className="h-6 w-6" />
-//                   <span className="hidden md:block font-medium">
-//                     {user?.name}
-//                   </span>
-//                   <svg
-//                     className="w-4 h-4"
-//                     fill="none"
-//                     stroke="currentColor"
-//                     viewBox="0 0 24 24"
-//                   >
-//                     <path
-//                       strokeLinecap="round"
-//                       strokeLinejoin="round"
-//                       strokeWidth={2}
-//                       d="M19 9l-7 7-7-7"
-//                     />
-//                   </svg>
-//                 </button>
-
-//                 {/* Dropdown Menu */}
-//                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-//                   <div className="py-1">
-//                     <Link
-//                       to="/profile"
-//                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-orange-500"
-//                     >
-//                       My Profile
-//                     </Link>
-//                     <button
-//                       onClick={handleLogout}
-//                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-red-500"
-//                     >
-//                       Logout
-//                     </button>
-//                   </div>
-//                 </div>
-//               </div>
-//             ) : (
-//               <div className="hidden md:flex items-center space-x-4">
-//                 <Link
-//                   to="/login"
-//                   className="text-gray-700 hover:text-orange-500 font-medium transition-colors"
-//                 >
-//                   Login
-//                 </Link>
-//                 <Link
-//                   to="/register"
-//                   className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 font-medium transition-colors"
-//                 >
-//                   Sign Up
-//                 </Link>
-//               </div>
-//             )}
-
-//             {/* Mobile menu button */}
-//             <button
-//               onClick={() => setIsMenuOpen(!isMenuOpen)}
-//               className="md:hidden p-2 text-gray-700 hover:text-orange-600 transition-colors"
-//             >
-//               {isMenuOpen ? (
-//                 <X className="h-6 w-6" />
-//               ) : (
-//                 <Menu className="h-6 w-6" />
-//               )}
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Mobile Navigation */}
-//         {isMenuOpen && (
-//           <div className="md:hidden border-t border-gray-200 bg-white">
-//             <div className="px-2 pt-2 pb-3 space-y-1">
-//               {navItems.map((item) => {
-//                 const IconComponent = item.icon;
-//                 return (
-//                   <Link
-//                     key={item.path}
-//                     to={item.path}
-//                     onClick={() => setIsMenuOpen(false)}
-//                     className={`flex items-center space-x-2 px-3 py-2 text-base font-medium w-full transition-all duration-200 rounded-md ${
-//                       isActive(item.path)
-//                         ? "text-orange-600 bg-orange-50"
-//                         : "text-gray-700 hover:text-orange-600 hover:bg-gray-50"
-//                     }`}
-//                   >
-//                     <IconComponent className="h-5 w-5" />
-//                     <span>{item.label}</span>
-//                   </Link>
-//                 );
-//               })}
-
-//               {/* Mobile Authentication Links */}
-//               <div className="border-t border-gray-200 pt-2 mt-2">
-//                 {isAuthenticated ? (
-//                   <>
-//                     <Link
-//                       to="/profile"
-//                       onClick={() => setIsMenuOpen(false)}
-//                       className="flex items-center space-x-2 px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-gray-50 rounded-md"
-//                     >
-//                       <User className="h-5 w-5" />
-//                       <span>My Profile</span>
-//                     </Link>
-//                     <button
-//                       onClick={() => {
-//                         handleLogout();
-//                         setIsMenuOpen(false);
-//                       }}
-//                       className="flex items-center space-x-2 px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md w-full text-left"
-//                     >
-//                       <span>Logout</span>
-//                     </button>
-//                   </>
-//                 ) : (
-//                   <>
-//                     <Link
-//                       to="/login"
-//                       onClick={() => setIsMenuOpen(false)}
-//                       className="flex items-center space-x-2 px-3 py-2 text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-gray-50 rounded-md"
-//                     >
-//                       <span>Login</span>
-//                     </Link>
-//                     <Link
-//                       to="/register"
-//                       onClick={() => setIsMenuOpen(false)}
-//                       className="flex items-center space-x-2 px-3 py-2 text-base font-medium bg-orange-500 text-white hover:bg-orange-600 rounded-md mx-3 mt-2"
-//                     >
-//                       <span>Sign Up</span>
-//                     </Link>
-//                   </>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//     </nav>
-//   );
-// };
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -2602,6 +2369,7 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
+        <SocketProvider>
         <RestaurantProvider>
           <div className="min-h-screen bg-gray-50">
             <Navigation />
@@ -2698,6 +2466,7 @@ const App = () => {
             `}</style>
           </div>
         </RestaurantProvider>
+        </SocketProvider>
       </AuthProvider>
     </Router>
   );

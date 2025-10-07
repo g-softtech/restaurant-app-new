@@ -1,13 +1,12 @@
+// contexts/RestaurantContext.jsx - Enhanced with Socket.IO
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import axios from 'axios';
+import { useSocket } from './SocketContext';
 
-// API Configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-// Create Context for Global State Management
 const RestaurantContext = createContext();
 
-// Custom Hook to use Restaurant Context
 const useRestaurant = () => {
   const context = useContext(RestaurantContext);
   if (!context) {
@@ -16,15 +15,39 @@ const useRestaurant = () => {
   return context;
 };
 
-// Context Provider Component
 const RestaurantProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  
+  // Get socket context for real-time updates
+  const { orderUpdate, newOrderNotification, clearOrderUpdate, clearNewOrderNotification } = useSocket();
 
-  // API Functions
+  // Handle real-time order updates
+  useEffect(() => {
+    if (orderUpdate) {
+      console.log('Order update received in RestaurantContext:', orderUpdate);
+      // You can add additional logic here if needed
+      // For example, updating local order cache
+    }
+  }, [orderUpdate]);
+
+  // Handle new order notifications (for admin)
+  useEffect(() => {
+    if (newOrderNotification) {
+      console.log('New order notification received:', newOrderNotification);
+      showNotification(`New Order! #${newOrderNotification.orderNumber}`, 'success');
+      
+      // Clear notification after showing
+      setTimeout(() => {
+        clearNewOrderNotification();
+      }, 5000);
+    }
+  }, [newOrderNotification, clearNewOrderNotification]);
+
+  // Fetch menu items
   const fetchMenuItems = async () => {
     try {
       setLoading(true);
@@ -102,7 +125,6 @@ const RestaurantProvider = ({ children }) => {
     }
   };
 
-  // Helper function to get emoji based on category
   const getEmojiForCategory = (category) => {
     const categoryEmojis = {
       'appetizer': '🥗',
@@ -129,7 +151,6 @@ const RestaurantProvider = ({ children }) => {
       return [...prev, { ...item, quantity: 1 }];
     });
     
-    // Show success notification
     showNotification(`Added ${item.name} to cart!`, 'success');
   };
 
@@ -161,10 +182,24 @@ const RestaurantProvider = ({ children }) => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  // Notification function
+  // Notification function (you can enhance this with a toast library)
   const showNotification = (message, type = 'info') => {
-    // You can implement a toast notification system here
     console.log(`${type.toUpperCase()}: ${message}`);
+    
+    // Create a simple toast notification
+    const toast = document.createElement('div');
+    toast.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in ${
+      type === 'success' ? 'bg-green-500' :
+      type === 'error' ? 'bg-red-500' :
+      type === 'warning' ? 'bg-yellow-500' :
+      'bg-blue-500'
+    } text-white font-medium`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
   };
 
   // Load menu items on mount
@@ -188,7 +223,10 @@ const RestaurantProvider = ({ children }) => {
     getTotalItems,
     fetchMenuItems,
     showNotification,
-    setUser
+    setUser,
+    // Real-time data
+    orderUpdate,
+    newOrderNotification
   };
 
   return (
@@ -197,4 +235,5 @@ const RestaurantProvider = ({ children }) => {
     </RestaurantContext.Provider>
   );
 };
+
 export { RestaurantProvider, useRestaurant };

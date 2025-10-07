@@ -1,4 +1,4 @@
-// routes/orders.js - Enhanced for Phase 6
+// routes/orders.js - Enhanced with Socket.IO real-time updates
 const express = require('express');
 const Order = require('../models/Order');
 const { auth, adminAuth } = require('../middleware/auth');
@@ -6,7 +6,7 @@ const router = express.Router();
 
 // @route   POST /api/orders
 // @desc    Create new order
-// @access  Public (can be guest or authenticated)
+// @access  Public
 router.post('/', async (req, res) => {
   try {
     console.log('Received order request:', req.body);
@@ -28,7 +28,6 @@ router.post('/', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-for-development');
         orderData.customer = decoded.userId;
       } catch (err) {
-        // If token is invalid, continue as guest order
         console.log('Invalid token, creating guest order');
       }
     }
@@ -39,6 +38,19 @@ router.post('/', async (req, res) => {
     await order.save();
     
     console.log('Order saved to database:', order._id);
+    
+    // Emit real-time notification to admins about new order
+    if (global.emitNewOrder) {
+      global.emitNewOrder({
+        _id: order._id,
+        orderNumber: order.orderNumber,
+        customerInfo: order.customerInfo,
+        items: order.items,
+        totalAmount: order.totalAmount,
+        status: order.status,
+        createdAt: order.createdAt
+      });
+    }
     
     res.json({
       success: true,
@@ -66,12 +78,10 @@ router.get('/', adminAuth, async (req, res) => {
     
     let query = {};
     
-    // Filter by status
     if (status && status !== 'all') {
       query.status = status;
     }
     
-    // Filter by date range
     if (startDate || endDate) {
       query.createdAt = {};
       if (startDate) query.createdAt.$gte = new Date(startDate);
@@ -121,7 +131,7 @@ router.get('/my-orders', auth, async (req, res) => {
 
 // @route   GET /api/orders/:id
 // @desc    Get single order by ID
-// @access  Public (for order tracking)
+// @access  Public
 router.get('/:id', async (req, res) => {
   try {
     console.log('Looking for order:', req.params.id);
@@ -192,6 +202,18 @@ router.patch('/:id/status', adminAuth, async (req, res) => {
     // Update status using the model method
     await order.updateStatus(status, req.user._id, note);
 
+    // Emit real-time update to order trackers and admins
+    if (global.emitOrderUpdate) {
+      global.emitOrderUpdate(order._id, {
+        _id: order._id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        statusHistory: order.statusHistory,
+        estimatedDeliveryTime: order.estimatedDeliveryTime,
+        updatedAt: new Date()
+      });
+    }
+
     res.json({
       success: true,
       message: 'Order status updated successfully',
@@ -223,7 +245,6 @@ router.patch('/:id/cancel', auth, async (req, res) => {
       });
     }
 
-    // Check authorization
     if (order.customer && order.customer.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -231,7 +252,6 @@ router.patch('/:id/cancel', auth, async (req, res) => {
       });
     }
 
-    // Check if order can be cancelled
     if (!order.canBeCancelled()) {
       return res.status(400).json({
         success: false,
@@ -240,6 +260,17 @@ router.patch('/:id/cancel', auth, async (req, res) => {
     }
 
     await order.updateStatus('cancelled', req.user._id, reason || 'Cancelled by user');
+
+    // Emit real-time update
+    if (global.emitOrderUpdate) {
+      global.emitOrderUpdate(order._id, {
+        _id: order._id,
+        orderNumber: order.orderNumber,
+        status: 'cancelled',
+        statusHistory: order.statusHistory,
+        updatedAt: new Date()
+      });
+    }
 
     res.json({
       success: true,

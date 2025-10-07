@@ -1,44 +1,46 @@
-// server entry point
+// server.js - Enhanced with Socket.IO
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const http = require('http');
+const { Server } = require('socket.io');
 
-
-// Import the orders routes
+// Import routes
 const orderRoutes = require('./src/routes/orders');
-
-// Add this with your other route imports
 const paymentRoutes = require('./src/routes/payments');
-
-
-
-// Add this new import ⬇️
 const menuRoutes = require('./src/routes/menu');
-
-const authRoutes = require('./src/routes/auth'); 
-
+const authRoutes = require('./src/routes/auth');
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+
+// Socket.IO Configuration
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
+});
+
+// Make io accessible to routes
+app.set('io', io);
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Routes
 app.use('/api/orders', orderRoutes);
-
 app.use('/api/payment', paymentRoutes);
-app.use('/api/auth', require('./src/routes/auth'));
-
-
-// Add this new route ⬇️
 app.use('/api/menu', menuRoutes);
-
-app.use('/api/auth', authRoutes); 
-
+app.use('/api/auth', authRoutes);
 
 // MongoDB Connection
 const connectDB = async () => {
@@ -54,10 +56,9 @@ const connectDB = async () => {
   }
 };
 
-// Connect to Database
 connectDB();
 
-// server.js - Add this route
+// Admin Stats Route
 app.get('/api/admin/stats', require('./src/middleware/auth').adminAuth, async (req, res) => {
   try {
     const Order = require('./src/models/Order');
@@ -88,16 +89,16 @@ app.get('/api/admin/stats', require('./src/middleware/auth').adminAuth, async (r
   }
 });
 
-// Add this to your server.js
+// Health Check Routes
 app.get('/api/health', (req, res) => {
   res.json({ 
     success: true, 
     message: 'Server is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    socketConnections: io.engine.clientsCount
   });
 });
 
-// Test Route
 app.get('/api/test', (req, res) => {
   res.json({ 
     success: true, 
@@ -106,17 +107,55 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// Health Check Route
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+// Socket.IO Connection Handling
+io.on('connection', (socket) => {
+  console.log(`🔌 User connected: ${socket.id}`);
+  
+  // Join admin room for admin users
+  socket.on('join-admin', () => {
+    socket.join('admin-room');
+    console.log(`👨‍💼 Admin joined: ${socket.id}`);
+  });
+  
+  // Join order tracking room for specific order
+  socket.on('track-order', (orderId) => {
+    socket.join(`order-${orderId}`);
+    console.log(`📦 User tracking order: ${orderId}`);
+  });
+  
+  // Leave order tracking room
+  socket.on('leave-order', (orderId) => {
+    socket.leave(`order-${orderId}`);
+    console.log(`📦 User stopped tracking order: ${orderId}`);
+  });
+  
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    console.log(`❌ User disconnected: ${socket.id}`);
+  });
+  
+  // Heartbeat for connection monitoring
+  socket.on('ping', () => {
+    socket.emit('pong', { timestamp: Date.now() });
   });
 });
 
+// Helper function to emit real-time updates (can be called from routes)
+global.emitOrderUpdate = (orderId, orderData) => {
+  // Notify specific order trackers
+  io.to(`order-${orderId}`).emit('order-updated', orderData);
+  
+  // Notify all admins
+  io.to('admin-room').emit('order-updated', orderData);
+  
+  console.log(`📢 Order update emitted for order: ${orderId}`);
+};
 
+global.emitNewOrder = (orderData) => {
+  // Notify all admins about new order
+  io.to('admin-room').emit('new-order', orderData);
+  console.log(`🆕 New order notification sent to admins`);
+};
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -138,8 +177,8 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔌 Socket.IO enabled on port ${PORT}`);
 });
-

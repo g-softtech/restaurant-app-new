@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSocket } from '../../contexts/SocketContext';
 import axios from 'axios';
 import {
   Users,
@@ -27,7 +28,8 @@ import {
   Calendar,
   Phone,
   MapPin,
-  Mail
+  Mail,
+  Bell
 } from 'lucide-react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
@@ -67,6 +69,11 @@ const AdminDashboard = () => {
     availability: true
   });
 
+ // Socket.IO integration
+  const { connected, newOrderNotification, orderUpdate, clearNewOrderNotification } = useSocket();
+  const [showNotificationBadge, setShowNotificationBadge] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+
   // Check admin authentication
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
@@ -80,6 +87,47 @@ const AdminDashboard = () => {
       fetchDashboardData();
     }
   }, [isAuthenticated, user]);
+
+  // Handle new order notifications
+  useEffect(() => {
+    if (newOrderNotification) {
+      console.log('New order notification in admin:', newOrderNotification);
+      
+      // Show notification badge
+      setShowNotificationBadge(true);
+      setNotificationCount(prev => prev + 1);
+      
+      // Refresh orders list
+      fetchOrders();
+      fetchStats();
+      
+      // Play sound and show alert
+      playNotificationSound();
+      showNewOrderAlert(newOrderNotification);
+      
+      // Clear after 5 seconds
+      setTimeout(() => {
+        clearNewOrderNotification();
+      }, 5000);
+    }
+  }, [newOrderNotification, clearNewOrderNotification]);
+
+  // Handle order status updates
+  useEffect(() => {
+    if (orderUpdate) {
+      console.log('Order update in admin:', orderUpdate);
+      
+      // Update the order in the local state
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order._id === orderUpdate._id 
+            ? { ...order, status: orderUpdate.status, statusHistory: orderUpdate.statusHistory }
+            : order
+        )
+      );
+    }
+  }, [orderUpdate]);
+
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -318,6 +366,46 @@ const AdminDashboard = () => {
     return <IconComponent size={14} />;
   };
 
+   const playNotificationSound = () => {
+    try {
+      const audio = new Audio('/notification.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(err => console.log('Audio play failed:', err));
+    } catch (err) {
+      console.log('Notification sound not available');
+    }
+  };
+
+  const showNewOrderAlert = (orderData) => {
+    // Create floating notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-20 right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-lg shadow-2xl z-50 animate-slide-in max-w-sm';
+    notification.innerHTML = `
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </div>
+        <div class="ml-3 flex-1">
+          <p class="text-sm font-bold">🆕 New Order Received!</p>
+          <p class="text-xs mt-1">Order #${orderData.orderNumber}</p>
+          <p class="text-xs">$${orderData.totalAmount.toFixed(2)} • ${orderData.items.length} items</p>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.remove();
+    }, 5000);
+  };
+
+  const clearNotificationBadge = () => {
+    setShowNotificationBadge(false);
+    setNotificationCount(0);
+  };
+
   // Filter orders
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.customerInfo?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -338,9 +426,12 @@ const AdminDashboard = () => {
     );
   }
 
+  
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
+       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="px-6 py-4">
           <div className="flex justify-between items-center">
@@ -349,6 +440,27 @@ const AdminDashboard = () => {
               <p className="text-gray-600">Bella Vista Restaurant Management</p>
             </div>
             <div className="flex items-center gap-4">
+              {/* Real-time Connection Status */}
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs ${
+                connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+              }`}>
+                <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                {connected ? 'Live' : 'Offline'}
+              </div>
+
+              {/* Notification Bell */}
+              <button
+                onClick={clearNotificationBadge}
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Bell className={`h-5 w-5 ${showNotificationBadge ? 'text-orange-600 animate-bounce' : 'text-gray-600'}`} />
+                {notificationCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                    {notificationCount}
+                  </span>
+                )}
+              </button>
+
               <button
                 onClick={() => navigate('/')}
                 className="text-sm text-gray-600 hover:text-orange-600 transition-colors"
