@@ -1,9 +1,0 @@
-[33m9372e2a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m before checkout replacement
-[33m24ff14c[m phase 7.2 completed
-[33m29ba2a1[m phase 7.1 completed
-[33m350df93[m[33m ([m[1;31morigin/main[m[33m)[m phase 6 completed
-[33m44589e5[m phase 5 completed
-[33mab8ceed[m AdminLogin,AdminDashboard, AuthContext,ProtectedRoute replaced
-[33m9c4b1dc[m paystack payment activated
-[33mb80ecb4[m Add README, .gitignore, and LICENSE
-[33m30b8d90[m Initial commit: setup restaurant app
