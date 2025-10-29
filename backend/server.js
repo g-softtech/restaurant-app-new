@@ -1,4 +1,4 @@
-// server.js - Enhanced with Socket.IO
+// server.js - Enhanced with Socket.IO, Coupons & Loyalty
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -11,6 +11,8 @@ const orderRoutes = require('./src/routes/orders');
 const paymentRoutes = require('./src/routes/payments');
 const menuRoutes = require('./src/routes/menu');
 const authRoutes = require('./src/routes/auth');
+const couponRoutes = require('./src/routes/coupons');
+const loyaltyRoutes = require('./src/routes/loyalty');
 
 // Load environment variables
 dotenv.config();
@@ -41,6 +43,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/loyalty', loyaltyRoutes);
 
 // MongoDB Connection
 const connectDB = async () => {
@@ -63,14 +67,30 @@ app.get('/api/admin/stats', require('./src/middleware/auth').adminAuth, async (r
   try {
     const Order = require('./src/models/Order');
     const MenuItem = require('./src/models/MenuItem');
+    const Coupon = require('./src/models/Coupon');
+    const User = require('./src/models/User');
     
     const totalOrders = await Order.countDocuments();
     const pendingOrders = await Order.countDocuments({ status: 'pending' });
     const activeMenuItems = await MenuItem.countDocuments({ availability: true });
+    const activeCoupons = await Coupon.countDocuments({ 
+      isActive: true, 
+      validUntil: { $gte: new Date() } 
+    });
     
     const revenueResult = await Order.aggregate([
       { $match: { paymentStatus: 'paid' } },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ]);
+    
+    const loyaltyStats = await User.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalActivePoints: { $sum: '$loyalty.points' },
+          totalEarnedPoints: { $sum: '$loyalty.totalPointsEarned' }
+        }
+      }
     ]);
     
     const totalRevenue = revenueResult[0]?.total || 0;
@@ -81,7 +101,12 @@ app.get('/api/admin/stats', require('./src/middleware/auth').adminAuth, async (r
         totalOrders,
         pendingOrders,
         activeMenuItems,
-        totalRevenue
+        activeCoupons,
+        totalRevenue,
+        loyalty: {
+          totalActivePoints: loyaltyStats[0]?.totalActivePoints || 0,
+          totalEarnedPoints: loyaltyStats[0]?.totalEarnedPoints || 0
+        }
       }
     });
   } catch (error) {
@@ -103,7 +128,16 @@ app.get('/api/test', (req, res) => {
   res.json({ 
     success: true, 
     message: 'Restaurant API Server is running!',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    features: {
+      orders: true,
+      payments: true,
+      menu: true,
+      authentication: true,
+      coupons: true,
+      loyaltyPoints: true,
+      realTimeTracking: true
+    }
   });
 });
 
@@ -181,4 +215,5 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔌 Socket.IO enabled on port ${PORT}`);
+  console.log(`✅ Coupons & Loyalty Points system active`);
 });
