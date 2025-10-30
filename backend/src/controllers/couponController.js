@@ -1,5 +1,5 @@
 // controllers/couponController.js
-const Coupon = require('../models/Coupon');
+const Coupon = require('../models/coupon');
 const User = require('../models/User');
 
 // @desc    Validate coupon code

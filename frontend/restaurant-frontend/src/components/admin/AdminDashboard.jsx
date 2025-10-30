@@ -69,10 +69,21 @@ const AdminDashboard = () => {
     availability: true
   });
 
- // Socket.IO integration
-  const { connected, newOrderNotification, orderUpdate, clearNewOrderNotification } = useSocket();
-  const [showNotificationBadge, setShowNotificationBadge] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
+// Socket.IO integration
+const { connected, newOrderNotification, orderUpdate, clearNewOrderNotification } = useSocket();
+const [showNotificationBadge, setShowNotificationBadge] = useState(false);
+const [notificationCount, setNotificationCount] = useState(0);
+
+// Set axios default headers
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    console.log('✅ Axios token configured');
+  }
+}, []);
+
+// Check admin authentication
 
   // Check admin authentication
   useEffect(() => {
@@ -208,6 +219,8 @@ const AdminDashboard = () => {
       ]);
     }
   };
+
+  
 
   const fetchStats = async () => {
     try {
